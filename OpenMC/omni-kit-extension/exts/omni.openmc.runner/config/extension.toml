@@ -1,0 +1,17 @@
+[package]
+title = "OpenMC Workflow Runner"
+description = "OpenMC Workflow Runner built as part of MSc Dissertation Project"
+version = "1.0"
+category = "Example"
+authors = ["William Smith"]
+keywords = ["openmc", "runner"]
+readme  = "docs/README.md"
+repository = ""
+
+[dependencies]
+"omni.kit.uiapp" = {}
+"omni.ui" = {}
+"omni.kit.menu.utils" = {}
+
+[[python.module]]
+name = "omni.openmc.runner"
