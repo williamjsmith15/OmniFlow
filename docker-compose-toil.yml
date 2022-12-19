@@ -1,0 +1,16 @@
+version: "3.9"
+
+services:
+  toil:
+    build:
+      context: .
+      dockerfile: ToilRunner/Dockerfile
+    volumes:
+      - ../OmniFlow/:/OmniFlow/
+    tty: true
+    stdin_open: true
+
+
+
+# docker compose -f "docker-compose-toil.yml" build
+# docker compose -f "docker-compose-toil.yml" up
