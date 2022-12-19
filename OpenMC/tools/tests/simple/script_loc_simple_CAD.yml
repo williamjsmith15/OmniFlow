@@ -1,4 +1,4 @@
 script:
   class: File
-  path: ../OpenMC_Scripts/simple_CAD.py
+  path: simple_CAD.py
 str: dagmc.vtk

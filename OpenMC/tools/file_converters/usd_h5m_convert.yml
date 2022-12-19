@@ -1,6 +1,6 @@
 usd_h5m_script:
   class: File
-  path: ../file_converters/usd_h5m.py
+  path: usd_h5m.py
 usd_CAD:
   class: File
-  path: ../file_converters/dagmc.usd
+  path: ../../ouput/omni/dagmc.usd # Need to reset this to where the usd file will output to

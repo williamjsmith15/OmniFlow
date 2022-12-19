@@ -1,6 +1,6 @@
 h5m_CAD_in:
   class: File
-  path: ../paramak/dagmc.h5m
+  path: ../../paramak/dagmc.h5m
 extract_script:
   class: File
-  path: ../paramak/extract_mats.py
+  path: ../../paramak/extract_mats.py

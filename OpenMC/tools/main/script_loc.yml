@@ -1,10 +1,10 @@
 script:
   class: File
-  path: ../OpenMC_Scripts/general_CAD.py
+  path: general_CAD.py
 str: dagmc.vtk
 dagmc_CAD:
   class: File
-  path: ../paramak/dagmc.h5m
+  path: ../../paramak/dagmc.h5m
 settings:
   class: File
-  path: ../output/omni/settings.txt
+  path: ../../output/omni/settings.txt
