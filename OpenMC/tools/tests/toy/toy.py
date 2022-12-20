@@ -3,8 +3,12 @@
 
 
 import openmc
-import matplotlib.pyplot as plt # Extra to save plots produced in the process
+import matplotlib.pyplot as plt         # Extra to save plots produced in the process
+import openmc_data_downloader as odd    # Removes need to have the --no-match-user in the CWL call, this downloads the data files needed for the neutronics code automatically
+import os
 
+# #Set cross sections XML path
+os.environ["OPENMC_CROSS_SECTIONS"] = str('/home/nndc_hdf5/cross_sections.xml')
 
 ####################
 # DEFINING MATERIALS
@@ -29,12 +33,18 @@ water.add_nuclide('O16', 1.0)
 water.set_density('g/cm3', 1.0)
 water.add_s_alpha_beta('c_H_in_H2O') # So bound-atom cross section is used as thermal energies rather than free-atom
 
+mats = openmc.Materials([uo2, zirconium, water]) # Add all materials to a group of materials
 
-materials = openmc.Materials([uo2, zirconium, water]) # Add all materials to a group of materials
+# odd.just_in_time_library_generator(
+#     libraries = 'ENDFB-7.1-NNDC',
+#     materials = mats
+# )
 
-materials.export_to_xml() # Export the material data to a .xml file that the solver will use later on
+# os.environ["OPENMC_CROSS_SECTIONS"] = str('/home/nndc_hdf5/cross_sections.xml')
 
+mats.export_to_xml() # Export the material data to a .xml file that the solver will use later on
 
+os.system('cat materials.xml')
 
 ####################
 # DEFINING GEOMETRY
