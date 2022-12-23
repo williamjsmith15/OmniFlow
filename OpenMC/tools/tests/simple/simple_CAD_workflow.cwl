@@ -17,14 +17,14 @@ steps:
         out:
             [example_out, tallies_out, tracks_out, CAD_out]
     h5m-vtk:
-        run: h5m_vtk_convert.cwl
+        run: ../../file_converters/h5m_vtk_convert.cwl
         in:
             CAD_in: openmc/CAD_out
             str: str
         out:
             [CAD_out]
     h5-pvtp:
-        run: h5_pvtp_convert.cwl
+        run: ../../file_converters/h5_pvtp_convert.cwl
         in:
             tracks_in: openmc/tracks_out
         out:

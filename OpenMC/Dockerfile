@@ -13,4 +13,5 @@ RUN pip install usd-core
 RUN pip install openmc_data_downloader
 
 
-CMD echo 'Test launch of container'
+WORKDIR /
+# CMD echo 'Test launch of container'

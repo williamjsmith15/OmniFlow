@@ -6,7 +6,7 @@ class: CommandLineTool
 baseCommand: python
 hints:
   DockerRequirement:
-    dockerPull: williamjsmith15/omniflow_openmc-env:latest
+    dockerImageId: omniflow-openmc
 inputs:
   script:
     type: File

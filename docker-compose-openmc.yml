@@ -1,10 +1,10 @@
 version: "3.9"
 
 services:
-  toil:
+  openmc:
     build:
       context: .
-      dockerfile: ToilRunner/Dockerfile
+      dockerfile: OpenMC/Dockerfile
     volumes:
       - ../OmniFlow/:/OmniFlow/
       - /tmp/:/tmp/
@@ -13,5 +13,5 @@ services:
 
 
 
-# docker compose -f "docker-compose-toil.yml" build
-# docker compose -f "docker-compose-toil.yml" up
+# docker compose -f "docker-compose-openmc.yml" build
+# docker compose -f "docker-compose-openmc.yml" up
