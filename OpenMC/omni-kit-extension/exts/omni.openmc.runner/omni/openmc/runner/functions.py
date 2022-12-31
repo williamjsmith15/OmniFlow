@@ -66,42 +66,45 @@ def toy_test():
     #Test Toy
     print("Running Toy Test Workflow")
 
-    # Attach to toil docker container
-    client = docker.from_env()
-    toilContainer = client.containers.get("omniflow-toil-1")
+    new_sys = False # True to test docker system
+    if new_sys:
+        # Attach to toil docker container 
+        client = docker.from_env()
+        toilContainer = client.containers.get("omniflow-toil-1")
 
-    # Send CWL files to container
-    print('Sending Files')
-    send_files(
-        container = toilContainer,
-        source = paths["workflow"],
-        temp = f'{paths["share"]}{sep}cwlBundle.tar',
-        destination = paths["workflowDest"]
-    )
+        # Send CWL files to container
+        print('Sending Files')
+        send_files(
+            container = toilContainer,
+            source = paths["workflow"],
+            temp = f'{paths["share"]}{sep}cwlBundle.tar',
+            destination = paths["workflowDest"]
+        )
 
-    # GET AND COPY USD FILE HERE
+        # GET AND COPY USD FILE HERE
 
-    # Run toil
-    print('Running Workflow in Container') 
-    var = toilContainer.exec_run(
-        ["toil-cwl-runner",
-         "--no-match-user",
-         "--outdir", f"{paths['output_container']}/toy",
-         "/tests/toy/openmc_tool_toy.cwl",
-         "/tests/toy/script_loc_toy.yml"]
-    )
-    print(var)
-    
-    # Copy files back to output folder
-    print('Retrieving Files')
-    get_files(
-        container = toilContainer,
-        source = paths['output_container'],
-        destination = paths['output_sim'],
-        fname = 'toy_output'
-    )
-    
-    # os.system(f"toil-cwl-runner --outdir {paths['output_omni']} --no-match-user {paths['workflow']}{sep}tests{sep}toy{sep}openmc_tool_toy.cwl {paths['workflow']}{sep}tests{sep}toy{sep}script_loc_toy.yml")
+        # Run toil
+        print('Running Workflow in Container') 
+        var = toilContainer.exec_run(
+            ["toil-cwl-runner",
+            "--no-match-user",
+            "--outdir", f"{paths['output_container']}/toy",
+            "/tests/toy/openmc_tool_toy.cwl",
+            "/tests/toy/script_loc_toy.yml"]
+        )
+        print(var)
+        
+        # Copy files back to output folder
+        print('Retrieving Files')
+        get_files(
+            container = toilContainer,
+            source = paths['output_container'],
+            destination = paths['output_sim'],
+            fname = 'toy_output'
+        )
+    else:
+        print(f"cwltool --outdir {paths['output_omni']} --no-match-user {paths['workflow']}{sep}tests{sep}toy{sep}openmc_tool_toy.cwl {paths['workflow']}{sep}tests{sep}toy{sep}script_loc_toy.yml")
+        os.system(f"cwltool --outdir {paths['output_omni']} --no-match-user {paths['workflow']}{sep}tests{sep}toy{sep}openmc_tool_toy.cwl {paths['workflow']}{sep}tests{sep}toy{sep}script_loc_toy.yml")
 
     print("Toy Test Completed")
 
@@ -109,9 +112,9 @@ def simple_CAD_test():
     #Test Simple CAD
     print("Running Simple CAD Test Workflow")
 
-    print(f"cwltool --outdir {paths['output_simple']} --no-match-user {paths['workflow']}{sep}tests{sep}simple{sep}simple_CAD_workflow.cwl {paths['workflow']}{sep}tests{sep}simple{sep}script_loc_simple_CAD.yml")
+    print(f"cwltool --outdir {paths['output_omni']} --no-match-user {paths['workflow']}{sep}tests{sep}simple{sep}simple_CAD_workflow.cwl {paths['workflow']}{sep}tests{sep}simple{sep}script_loc_simple_CAD.yml")
         
-    os.system(f"cwltool --outdir {paths['output_simple']} --no-match-user {paths['workflow']}{sep}tests{sep}simple{sep}simple_CAD_workflow.cwl {paths['workflow']}{sep}tests{sep}simple{sep}script_loc_simple_CAD.yml")
+    os.system(f"cwltool --outdir {paths['output_omni']} --no-match-user {paths['workflow']}{sep}tests{sep}simple{sep}simple_CAD_workflow.cwl {paths['workflow']}{sep}tests{sep}simple{sep}script_loc_simple_CAD.yml")
 
     print("DONE!")
     
