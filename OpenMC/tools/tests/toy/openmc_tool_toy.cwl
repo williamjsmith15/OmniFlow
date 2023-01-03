@@ -6,7 +6,8 @@ class: CommandLineTool
 baseCommand: python
 hints:
   DockerRequirement:
-    dockerImageId: williamjsmith15/omniflow_openmc-env:latest
+    dockerPull: ghcr.io/fusion-energy/neutronics-workshop
+    # dockerImageId: williamjsmith15/omniflow_openmc-env:latest
 inputs:
   script:
     type: File
