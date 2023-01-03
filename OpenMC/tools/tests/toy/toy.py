@@ -8,7 +8,7 @@ import openmc_data_downloader as odd    # Removes need to have the --no-match-us
 import os
 
 # #Set cross sections XML path
-os.environ["OPENMC_CROSS_SECTIONS"] = str('/home/nndc_hdf5/cross_sections.xml')
+# os.environ["OPENMC_CROSS_SECTIONS"] = str('/home/nndc_hdf5/cross_sections.xml')
 
 ####################
 # DEFINING MATERIALS
@@ -31,7 +31,7 @@ water = openmc.Material(name="h2o") # Same process as uo2
 water.add_nuclide('H1', 2.0)
 water.add_nuclide('O16', 1.0)
 water.set_density('g/cm3', 1.0)
-water.add_s_alpha_beta('c_H_in_H2O') # So bound-atom cross section is used as thermal energies rather than free-atom
+# water.add_s_alpha_beta('c_H_in_H2O') # So bound-atom cross section is used as thermal energies rather than free-atom
 
 mats = openmc.Materials([uo2, zirconium, water]) # Add all materials to a group of materials
 
