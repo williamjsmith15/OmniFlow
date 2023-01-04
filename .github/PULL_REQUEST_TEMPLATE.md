@@ -1,6 +1,6 @@
 # Story Title
 
-[This is the Issue Title](https://github.com/username/repository-name/issues/1)
+[This is the Issue Title](https://github.com/williamjsmith15/OmniFlow/issues/1)
 
 ## Changes made
 

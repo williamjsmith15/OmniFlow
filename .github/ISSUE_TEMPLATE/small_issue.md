@@ -17,4 +17,4 @@ This Task will...
 
 <!-- The link below should link to its Epic Parent. -->
 
-[Feature: Awesome Feature Title](https://github.com/username/repository-name/issues/1)
+[Feature: Awesome Feature Title](https://github.com/williamjsmith15/OmniFlow/issues/1)
