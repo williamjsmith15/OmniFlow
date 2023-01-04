@@ -1,6 +1,10 @@
 ---
 name: Bug report
 about: Create a report to help us improve
+title: "[Bug]: "
+labels: "bug"
+assignees:
+    - williamjsmith15
 ---
 
 <!-- Please search existing issues to avoid creating duplicates. -->

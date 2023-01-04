@@ -1,6 +1,9 @@
 ---
 name: Task
 about: A small task that is, most likely, part of an Epic. It will usually be labeled as `good first issue`.
+labels: "good first issue"
+assignees:
+    - williamjsmith15
 ---
 
 <!-- Issue title should mirror the Task Title. -->
