@@ -17,7 +17,7 @@ water = openmc.Material(name="water")
 water.add_nuclide('H1', 2.0, 'ao')
 water.add_nuclide('O16', 1.0, 'ao')
 water.set_density('g/cc', 1.0)
-water.add_s_alpha_beta('c_H_in_H2O')
+#water.add_s_alpha_beta('c_H_in_H2O') Have to remove due to issue in new docker container - see OmniFlow doc 03/01/23
 water.id = 41
 
 iron = openmc.Material(name="iron")
