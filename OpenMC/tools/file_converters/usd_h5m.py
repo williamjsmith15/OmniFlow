@@ -5,11 +5,11 @@ import numpy as np
 import os
 
 # Name of file changeable for ease of testing... default should be 'dagmc.usd'
-fname_root = 'dagmc' # Default
+# fname_root = 'dagmc' # Default
 # fname_root = 'Test_1_Bucket' # TESTING
 # fname_root = 'Test_2_MilkJug' # TESTING
 # fname_root = 'Test_3_RubixCube' # TESTING
-# fname_root = 'Test_4_DonutOnCube' # TESTING
+fname_root = 'Test_4_DonutOnCube' # TESTING
 
 # Grab the filepath of the usd file
 def find_files(filename): # TODO: find a better way to search for this rather than search from root (lazy implementation)
@@ -22,9 +22,7 @@ def find_files(filename): # TODO: find a better way to search for this rather th
             result.append(os.path.join(root, filename))
     return result
 
-
-
-# USD Helper Function
+# USD Helper Functions
 def getValidProperty (primative, parameterName):
     # Get param
     prop = primative.GetProperty(parameterName)
@@ -36,6 +34,24 @@ def getValidProperty (primative, parameterName):
         print("Requested parameter is not valid!")
         return None
         #raise Exception("Requested parameter is not valid!")
+
+def getProperty (primative, parameterName): # Unsafe 
+    # Get param
+    prop = primative.GetProperty(parameterName).Get()
+
+    return prop
+
+def propertyIsValid (primative, parameterName):
+    # Get param
+    prop = primative.GetProperty(parameterName)
+    
+    # Test validity
+    if ( type(prop) == type(Usd.Attribute())): # is valid
+        return True
+    else:
+        return False
+
+
 
 
 class USDtoDAGMC:
@@ -69,6 +85,7 @@ class USDtoDAGMC:
         for primID, x in enumerate(stage.Traverse()):
             primType = x.GetTypeName()
             print(f"PRIM: {str(primType)}")
+            print(f'PrimID is {primID}')
 
             if str(primType) == 'Mesh':
                 # GET MATERIAL NAME HERE - NEEDED FOR MATERIALS STUFF LATER - IMPLEMENTED ONLY WITH DUMMY MAT NAMES SO FAR
@@ -76,8 +93,14 @@ class USDtoDAGMC:
                 # Get num of vertecies in elements
                 allVertexCounts  = np.array(getValidProperty(x,"faceVertexCounts"))
                 allVertexIndices = np.array(getValidProperty(x,"faceVertexIndices"))
+
+                # Get if there is rotation or translation of the meshes
+                rotation = [0,0,0] if not propertyIsValid(x,"xformOp:rotateXYZ") else list(getProperty(x,"xformOp:rotateXYZ"))
+                translation = np.array([0,0,0]) if not propertyIsValid(x,"xformOp:translate") else np.array(list(getProperty(x,"xformOp:translate")))
+                print(f'Rotation is {rotation}')    # Not currently doing anything with rotation - will keep an eye and see if its an issue
+                print(f'Translation is {translation}')
                 
-                newVertices = np.array(getValidProperty(x,"points"), dtype='float64') # Assign vertices here
+                newVertices = np.array(getValidProperty(x,"points"), dtype='float64') + translation # Assign vertices here and add translation to the vertexes - fixes meshes at the origin issue 
                 if self.vertices.size == 0: # For first run though just set vertices to newVertices array
                     self.vertices = newVertices
                 else:
