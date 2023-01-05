@@ -3,4 +3,8 @@ usd_h5m_script:
   path: usd_h5m.py
 usd_CAD:
   class: File
-  path: ../../ouput/omni/dagmc.usd # Need to reset this to where the usd file will output to
+  path: ../../output/omni/dagmc.usd # Need to reset this to where the usd file will output to
+  # path: ../../../TEST/Test_USD/Test_2_MilkJug.usd 
+
+  # Test running: 
+  # cwltool --outdir /home/williamjsmith15/PhD/OmniFlow/TEST/Test_USD/output /home/williamjsmith15/PhD/OmniFlow/OpenMC/tools/file_converters/usd_h5m_convert.cwl /home/williamjsmith15/PhD/OmniFlow/OpenMC/tools/file_converters/usd_h5m_convert.yml
