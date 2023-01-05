@@ -5,11 +5,11 @@ import numpy as np
 import os
 
 # Name of file changeable for ease of testing... default should be 'dagmc.usd'
-# fname_root = 'dagmc' # Default
+fname_root = 'dagmc' # Default
 # fname_root = 'Test_1_Bucket' # TESTING
 # fname_root = 'Test_2_MilkJug' # TESTING
 # fname_root = 'Test_3_RubixCube' # TESTING
-fname_root = 'Test_4_DonutOnCube' # TESTING
+# fname_root = 'Test_4_DonutOnCube' # TESTING
 
 # Grab the filepath of the usd file
 def find_files(filename): # TODO: find a better way to search for this rather than search from root (lazy implementation)

@@ -19,8 +19,8 @@ outputs:
   h5m_out:
     type: File
     outputBinding:
-      # glob: dagmc.h5m
-      glob: Test_4_DonutOnCube.h5m # Test case
+      glob: dagmc.h5m
+      # glob: Test_4_DonutOnCube.h5m # Test case
 #   example_out:
 #     type: stdout
 # stdout: output.txt
