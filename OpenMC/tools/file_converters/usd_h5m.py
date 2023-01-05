@@ -5,8 +5,11 @@ import numpy as np
 import os
 
 # Name of file changeable for ease of testing... default should be 'dagmc.usd'
-# fname = 'dagmc.usd' # Default
-fname = 'Test_3_RubixCube.usd' # TESTING
+# fname_root = 'dagmc' # Default
+# fname_root = 'Test_1_Bucket' # TESTING
+# fname_root = 'Test_2_MilkJug' # TESTING
+# fname_root = 'Test_3_RubixCube' # TESTING
+fname_root = 'Test_4_DonutOnCube' # TESTING
 
 # Grab the filepath of the usd file
 def find_files(filename): # TODO: find a better way to search for this rather than search from root (lazy implementation)
@@ -45,7 +48,7 @@ class USDtoDAGMC:
         self.triangles      = []
         self.material_tags  = []
 
-    def add_USD_file(self, filename: str = fname):
+    def add_USD_file(self, filename: str = fname_root + '.usd'):
         '''
         Load parts form USD into class with their associated material tags and then converts to triangles for use 
         in the conversion script
@@ -68,7 +71,6 @@ class USDtoDAGMC:
             print(f"PRIM: {str(primType)}")
 
             if str(primType) == 'Mesh':
-                print('Hello world')
                 # GET MATERIAL NAME HERE - NEEDED FOR MATERIALS STUFF LATER - IMPLEMENTED ONLY WITH DUMMY MAT NAMES SO FAR
 
                 # Get num of vertecies in elements
@@ -136,7 +138,7 @@ class USDtoDAGMC:
             
             print("\n\n")
 
-    def save_to_h5m(self, filename: str = fname):
+    def save_to_h5m(self, filename: str = fname_root + '.h5m'):
         '''
         Use the verticies saved in the class to convert to h5m using the vertices_to_h5m mini package
         https://github.com/fusion-energy/vertices_to_h5m
@@ -152,7 +154,7 @@ class USDtoDAGMC:
             h5m_filename=filename,
         )
 
-filepath = find_files(fname)
+filepath = find_files(fname_root + '.usd')
 convert = USDtoDAGMC()
 convert.add_USD_file(filename = filepath[0])
 convert.save_to_h5m()
