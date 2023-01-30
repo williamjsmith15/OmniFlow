@@ -1,4 +1,5 @@
 import os, tarfile, tempfile, pathlib # System packages
+import omni
 
 import docker
 
@@ -148,7 +149,11 @@ def settings_enter(num_source):
         file.write(f"num_sources = {num_source}")
 
 
-
+def export_stage():
+    print(f"Exporting stage to: {paths['output_omni']}/dagmc.usd")
+    stage = omni.usd.get_context().get_stage()
+    stage.Export(f"{paths['output_omni']}/dagmc.usd")
+    print("Successfully exported USD stage!")
 
 
 #for future ref
