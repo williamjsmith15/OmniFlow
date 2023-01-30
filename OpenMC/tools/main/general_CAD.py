@@ -95,7 +95,7 @@ reflective_2 = openmc.Plane(
     boundary_type="reflective",
 )
 # specifies the region as below the universe boundary and inside the reflective surfaces
-region = -vac_surf # & -reflective_1 & +reflective_2 DEBUGGING
+region = -vac_surf & -reflective_1 & +reflective_2
 # creates a cell from the region and fills the cell with the dagmc geometry
 containing_cell = openmc.Cell(cell_id=9999, region=region, fill=dagmc_univ)
 
