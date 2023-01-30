@@ -13,7 +13,7 @@ parent_folder = ext_path.split(f"{sep}omni-kit", 1)[0]  # File path of parent fo
 tmp       = tempfile.gettempdir()
 
 paths = {
-        "workflow"          : f"{parent_folder}{sep}tools{sep}",
+        "workflow"          : f"{parent_folder}{sep}tools",
         "output_container"  : f"{sep}output",  # IN container
         "output_omni"       : f"{parent_folder}{sep}output{sep}omni",
         "output_sim"        : f"{parent_folder}{sep}output{sep}simulation",
@@ -154,10 +154,3 @@ def export_stage():
     stage = omni.usd.get_context().get_stage()
     stage.Export(f"{paths['output_omni']}/dagmc.usd")
     print("Successfully exported USD stage!")
-
-
-#for future ref
-
-# #to get omni usd stage
-# stage = omni.usd.get_context().get_stage()
-# stage.Export(f'{paths["usdTmp"]}/export.usd')
