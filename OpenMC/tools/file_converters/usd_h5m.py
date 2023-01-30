@@ -51,6 +51,16 @@ def propertyIsValid (primative, parameterName):
     else:
         return False
 
+def get_rot(rotation):
+    # Calculates rotation matrix given a x,y,z rotation in degrees
+    factor = 2 * np.pi / 360   # Convert to radians
+    x_angle, y_angle, z_angle = rotation[0]*factor, rotation[1]*factor, rotation[2]*factor
+    x_rot = np.array([[1,0,0],[0,np.cos(x_angle),-np.sin(x_angle)],[0,np.sin(x_angle),np.cos(x_angle)]])
+    y_rot = np.array([[np.cos(y_angle),0,np.sin(y_angle)],[0,1,0],[-np.sin(y_angle),0,np.cos(y_angle)]])
+    z_rot = np.array([[np.cos(z_angle),-np.sin(z_angle),0],[np.sin(z_angle),np.cos(z_angle),0],[0,0,1]])
+    rot_mat = np.dot(np.dot(x_rot,y_rot),z_rot)
+    return rot_mat
+
 
 
 
@@ -97,10 +107,17 @@ class USDtoDAGMC:
                 # Get if there is rotation or translation of the meshes
                 rotation = [0,0,0] if not propertyIsValid(x,"xformOp:rotateXYZ") else list(getProperty(x,"xformOp:rotateXYZ"))
                 translation = np.array([0,0,0]) if not propertyIsValid(x,"xformOp:translate") else np.array(list(getProperty(x,"xformOp:translate")))
-                print(f'Rotation is {rotation}')    # Not currently doing anything with rotation - will keep an eye and see if its an issue
+                print(f'Rotation is {rotation}')
                 print(f'Translation is {translation}')
+
+                rot_matrix = get_rot(rotation)
+                print(rot_matrix)
                 
-                newVertices = np.array(getValidProperty(x,"points"), dtype='float64') + translation # Assign vertices here and add translation to the vertexes - fixes meshes at the origin issue 
+                
+                newVertices = np.array(getValidProperty(x,"points"), dtype='float64') # Assign vertices here and add rotation and translation
+                newVertices = np.array([np.dot(rot_matrix,xyz) for xyz in newVertices]) # Have to rotate first before translating as it rotates around the origin
+                newVertices = newVertices + translation
+                
                 if self.vertices.size == 0: # For first run though just set vertices to newVertices array
                     self.vertices = newVertices
                 else:
