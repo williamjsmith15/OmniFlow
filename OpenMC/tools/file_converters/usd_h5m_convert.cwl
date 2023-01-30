@@ -16,7 +16,7 @@ inputs:
     type: File
     
 outputs:
-  h5m_out:
+  dagmc_CAD:
     type: File
     outputBinding:
       glob: dagmc.h5m
