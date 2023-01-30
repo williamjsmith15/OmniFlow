@@ -123,10 +123,11 @@ def run_workflow():
     #Main OpenMC Workflow runner
     print('Running OpenMC Workflow')
 
-    print("Generating Files")
+    print("Exporting USD Stage")
+    export_stage()
 
+    print("Running Workflow")
     print(f"cwltool --outdir {paths['output_omni']} --no-match-user {paths['workflow']}{sep}main{sep}openmc_workflow.cwl {paths['workflow']}{sep}main{sep}script_loc.yml")
-        
     os.system(f"cwltool --outdir {paths['output_omni']} --no-match-user {paths['workflow']}{sep}main{sep}openmc_workflow.cwl {paths['workflow']}{sep}main{sep}script_loc.yml")
 
     print(f"Done! Your files will be in: {paths['output_omni']}")

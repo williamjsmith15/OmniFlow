@@ -1,9 +1,0 @@
-MATERIALS
-mat1 Fe 7.7
-mat2 Fe 7.7
-SOURCES
-12 500 500 0
-SETTINGS
-batches 5
-particles 5000
-run_mode fixed source
