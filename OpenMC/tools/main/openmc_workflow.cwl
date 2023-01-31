@@ -7,25 +7,34 @@ inputs:
         type: File
     str:
         type: string
-    dagmc_CAD:
+    usd_CAD:
         type: File
     settings:
+        type: File
+    usd_h5m_script:
         type: File
 
 
 steps:
+    usd_h5m:
+        run: ../file_converters/usd_h5m_convert.cwl
+        in:
+            usd_h5m_script: usd_h5m_script
+            usd_CAD: usd_CAD
+        out:
+            [dagmc_CAD]
     openmc:
         run: openmc_tool.cwl
         in:
             script: script
-            dagmc_CAD: dagmc_CAD
+            dagmc_CAD: usd_h5m/dagmc_CAD
             settings: settings
         out:
             [example_out, tracks_out]
     h5m-vtk:
         run: ../file_converters/h5m_vtk_convert.cwl
         in:
-            CAD_in: dagmc_CAD
+            CAD_in: usd_h5m/dagmc_CAD
             str: str
         out:
             [CAD_out]

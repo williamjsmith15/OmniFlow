@@ -1,6 +1,9 @@
-h5m_CAD_in:
+usd_CAD:
   class: File
-  path: ../../paramak/dagmc.h5m
+  path: ../../output/omni/dagmc.usd
 extract_script:
   class: File
-  path: ../../paramak/extract_mats.py
+  path: extract_mats.py
+usd_h5m_script:
+  class: File
+  path: ../file_converters/usd_h5m.py

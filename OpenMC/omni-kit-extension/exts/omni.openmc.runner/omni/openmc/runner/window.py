@@ -174,6 +174,10 @@ class Window(ui.Window):
         with ui.VStack(height=0, spacing=SPACING):
             ui.Button("Generate Files", clicked_fn=lambda: self.generate())
 
+    def _build_export(self):
+        with ui.VStack(height=0, spacing=SPACING):
+            ui.Button("Export USD Stage", clicked_fn=lambda: export_stage())
+
     def _build_fn(self):
         """
         The method that is called to build all the UI once the window is
@@ -185,5 +189,6 @@ class Window(ui.Window):
                 self._build_materials()
                 self._build_settings()
                 self._build_generate()
+                self._build_export()
 
     
