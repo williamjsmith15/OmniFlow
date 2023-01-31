@@ -17,6 +17,7 @@ paths = {
         "output_container"  : f"{sep}output",  # IN container
         "output_omni"       : f"{parent_folder}{sep}output{sep}omni",
         "output_sim"        : f"{parent_folder}{sep}output{sep}simulation",
+        "output_test"       : f"{parent_folder}{sep}output{sep}test",
         "general_CAD"       : f"{sep}paramak{sep}dagmc.h5m",
         "sep"               : sep,
         "tmp"               : tmp,
@@ -104,20 +105,20 @@ def toy_test():
             fname = 'toy_output'
         )
     else:
-        print(f"cwltool --outdir {paths['output_omni']} --no-match-user {paths['workflow']}{sep}tests{sep}toy{sep}openmc_tool_toy.cwl {paths['workflow']}{sep}tests{sep}toy{sep}script_loc_toy.yml")
-        os.system(f"cwltool --outdir {paths['output_omni']} --no-match-user {paths['workflow']}{sep}tests{sep}toy{sep}openmc_tool_toy.cwl {paths['workflow']}{sep}tests{sep}toy{sep}script_loc_toy.yml")
+        print(f"cwltool --outdir {paths['output_test']} --no-match-user {paths['workflow']}{sep}tests{sep}toy{sep}openmc_tool_toy.cwl {paths['workflow']}{sep}tests{sep}toy{sep}script_loc_toy.yml")
+        os.system(f"cwltool --outdir {paths['output_test']} --no-match-user {paths['workflow']}{sep}tests{sep}toy{sep}openmc_tool_toy.cwl {paths['workflow']}{sep}tests{sep}toy{sep}script_loc_toy.yml")
 
-    print("Toy Test Completed")
+    print(f"Toy Test Complete! Your files will be in: {paths['output_test']}")
 
 def simple_CAD_test():
     #Test Simple CAD
     print("Running Simple CAD Test Workflow")
 
-    print(f"cwltool --outdir {paths['output_omni']} --no-match-user {paths['workflow']}{sep}tests{sep}simple{sep}simple_CAD_workflow.cwl {paths['workflow']}{sep}tests{sep}simple{sep}script_loc_simple_CAD.yml")
+    print(f"cwltool --outdir {paths['output_test']} --no-match-user {paths['workflow']}{sep}tests{sep}simple{sep}simple_CAD_workflow.cwl {paths['workflow']}{sep}tests{sep}simple{sep}script_loc_simple_CAD.yml")
         
-    os.system(f"cwltool --outdir {paths['output_omni']} --no-match-user {paths['workflow']}{sep}tests{sep}simple{sep}simple_CAD_workflow.cwl {paths['workflow']}{sep}tests{sep}simple{sep}script_loc_simple_CAD.yml")
+    os.system(f"cwltool --outdir {paths['output_test']} --no-match-user {paths['workflow']}{sep}tests{sep}simple{sep}simple_CAD_workflow.cwl {paths['workflow']}{sep}tests{sep}simple{sep}script_loc_simple_CAD.yml")
 
-    print("DONE!")
+    print(f"Simple CAD Test Complete! Your files will be in: {paths['output_test']}")
     
 def run_workflow():
     #Main OpenMC Workflow runner
@@ -127,10 +128,10 @@ def run_workflow():
     export_stage()
 
     print("Running Workflow")
-    print(f"cwltool --outdir {paths['output_omni']} --no-match-user {paths['workflow']}{sep}main{sep}openmc_workflow.cwl {paths['workflow']}{sep}main{sep}script_loc.yml")
-    os.system(f"cwltool --outdir {paths['output_omni']} --no-match-user {paths['workflow']}{sep}main{sep}openmc_workflow.cwl {paths['workflow']}{sep}main{sep}script_loc.yml")
+    print(f"cwltool --outdir {paths['output_sim']} --no-match-user {paths['workflow']}{sep}main{sep}openmc_workflow.cwl {paths['workflow']}{sep}main{sep}script_loc.yml")
+    os.system(f"cwltool --outdir {paths['output_sim']} --no-match-user {paths['workflow']}{sep}main{sep}openmc_workflow.cwl {paths['workflow']}{sep}main{sep}script_loc.yml")
 
-    print(f"Done! Your files will be in: {paths['output_omni']}")
+    print(f"Done! Your files will be in: {paths['output_sim']}")
 
 
 def get_materials():
@@ -144,7 +145,7 @@ def get_materials():
     print(f"cwltool --outdir {paths['output_omni']} --no-match-user {paths['workflow']}{sep}dagmc_material_name{sep}dagmc_materials.cwl {paths['workflow']}{sep}dagmc_material_name{sep}dagmc_materials.yml")
     os.system(f"cwltool --outdir {paths['output_omni']} --no-match-user {paths['workflow']}{sep}dagmc_material_name{sep}dagmc_materials.cwl {paths['workflow']}{sep}dagmc_material_name{sep}dagmc_materials.yml")
 
-    print("DONE")
+    print("Materials Getter Finished")
 
 
 def settings_enter(num_source):
