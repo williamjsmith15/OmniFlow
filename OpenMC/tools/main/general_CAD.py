@@ -28,9 +28,9 @@ for root, dirs, files in os.walk(cwl_folder):
             geometry_path = os.path.join(root, file)
 
 # Get all settings out
-mats = []
-srcs = []
-sets = []
+materials = []
+sources = []
+settings = []
 position = 0
 with open(settings_path) as f:
     for line in f:
@@ -41,29 +41,29 @@ with open(settings_path) as f:
             if "SOURCES" in line:
                 position = 2
             else:
-                mats.append(line.split())
+                materials.append(line.split())
         elif position == 2:
             if "SETTINGS" in line:
                 position = 3
             else:
-                srcs.append(line.split())
+                sources.append(line.split())
         elif position == 3:
-            sets.append(line.split())
+            settings.append(line.split())
         
 
 ##################
 # DEFINE MATERIALS
 ##################
 
-tmp_mat_array = []
-for mat in mats:
-    tmp_mat = openmc.Material(name = mat[0])
-    tmp_mat.add_element(mat[1], 1, "ao")
-    tmp_mat.set_density("g/cm3", float(mat[2]))
-    tmp_mat_array.append(tmp_mat)
+tmp_material_array = []
+for material in materials:
+    tmp_material = openmc.Material(name = material[0])
+    tmp_material.add_element(material[1], 1, "ao")
+    tmp_material.set_density("g/cm3", float(material[2]))
+    tmp_material_array.append(tmp_material)
 
-materials = openmc.Materials(tmp_mat_array)
-materials.export_to_xml()
+materials_file = openmc.Materials(tmp_material_array)
+materials_file.export_to_xml()
 
 ##################
 # DEFINE GEOMETRY
@@ -106,24 +106,32 @@ geometry.export_to_xml()
 # DEFINE SETTINGS
 ##################
 
-settings = openmc.Settings()
+settings_file = openmc.Settings()
 
 # Sources
 sources = []
-for src in srcs:
-    src_pnt = openmc.stats.Point(xyz=(float(src[1]), float(src[2]), float(src[3])))
-    src = openmc.Source(space=src_pnt, energy=openmc.stats.Discrete(x=[float(src[0]),], p=[1.0,]))
-    sources.append(src)
-src_str = 1.0 / len(sources)
 for source in sources:
-    source.strength = src_str
-settings.source = sources
+    source_pnt = openmc.stats.Point(xyz=(float(source[1]), float(source[2]), float(source[3])))
+    source = openmc.Source(space=source_pnt, energy=openmc.stats.Discrete(x=[float(source[0]),], p=[1.0,]))
+    sources.append(source)
+source_str = 1.0 / len(sources)
+for source in sources:
+    source.strength = source_str
+settings_file.source = sources
 
 # Settings
-settings.batches = 10
-settings.particles = 5000
-settings.run_mode = "fixed source"
+for setting in settings:
+    try:
+        match setting[0]:
+            case "batches":
+                settings_file.batches = int(setting[1])
+            case "particles":
+                settings_file.particles = int(setting[1])
+            case "run_mode":
+                settings_file.run_mode = str(setting[1])
+    except:
+        print(f"Setting: {setting} did not match one of the expected cases.")
 
-settings.export_to_xml()
+settings_file.export_to_xml()
 
 openmc.run(tracks=True) # Run in tracking mode for visualisation of tracks through CAD
