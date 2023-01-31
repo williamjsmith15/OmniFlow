@@ -1,4 +1,5 @@
 import os, tarfile, tempfile, pathlib # System packages
+import omni
 
 import docker
 
@@ -12,7 +13,7 @@ parent_folder = ext_path.split(f"{sep}omni-kit", 1)[0]  # File path of parent fo
 tmp       = tempfile.gettempdir()
 
 paths = {
-        "workflow"          : f"{parent_folder}{sep}tools{sep}",
+        "workflow"          : f"{parent_folder}{sep}tools",
         "output_container"  : f"{sep}output",  # IN container
         "output_omni"       : f"{parent_folder}{sep}output{sep}omni",
         "output_sim"        : f"{parent_folder}{sep}output{sep}simulation",
@@ -122,10 +123,11 @@ def run_workflow():
     #Main OpenMC Workflow runner
     print('Running OpenMC Workflow')
 
-    print("Generating Files")
+    print("Exporting USD Stage")
+    export_stage()
 
+    print("Running Workflow")
     print(f"cwltool --outdir {paths['output_omni']} --no-match-user {paths['workflow']}{sep}main{sep}openmc_workflow.cwl {paths['workflow']}{sep}main{sep}script_loc.yml")
-        
     os.system(f"cwltool --outdir {paths['output_omni']} --no-match-user {paths['workflow']}{sep}main{sep}openmc_workflow.cwl {paths['workflow']}{sep}main{sep}script_loc.yml")
 
     print(f"Done! Your files will be in: {paths['output_omni']}")
@@ -135,8 +137,11 @@ def get_materials():
     # Gets material names from the dagmc.h5m file (if its in the paramak folder)
     print("Getting Material Names")
 
+    print('Exporting File')
+    export_stage()
+
+    print('Running materials getter')
     print(f"cwltool --outdir {paths['output_omni']} --no-match-user {paths['workflow']}{sep}dagmc_material_name{sep}dagmc_materials.cwl {paths['workflow']}{sep}dagmc_material_name{sep}dagmc_materials.yml")
-        
     os.system(f"cwltool --outdir {paths['output_omni']} --no-match-user {paths['workflow']}{sep}dagmc_material_name{sep}dagmc_materials.cwl {paths['workflow']}{sep}dagmc_material_name{sep}dagmc_materials.yml")
 
     print("DONE")
@@ -148,11 +153,8 @@ def settings_enter(num_source):
         file.write(f"num_sources = {num_source}")
 
 
-
-
-
-#for future ref
-
-# #to get omni usd stage
-# stage = omni.usd.get_context().get_stage()
-# stage.Export(f'{paths["usdTmp"]}/export.usd')
+def export_stage():
+    print(f"Exporting stage to: {paths['output_omni']}/dagmc.usd")
+    stage = omni.usd.get_context().get_stage()
+    stage.Export(f"{paths['output_omni']}/dagmc.usd")
+    print("Successfully exported USD stage!")

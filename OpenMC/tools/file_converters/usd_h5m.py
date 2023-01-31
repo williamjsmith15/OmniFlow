@@ -1,8 +1,15 @@
 from typing import Iterable
-from pxr import Usd
+from pxr import Usd, UsdShade
 from vertices_to_h5m import vertices_to_h5m
 import numpy as np
 import os
+
+# Name of file changeable for ease of testing... default should be 'dagmc.usd'
+fname_root = 'dagmc' # Default
+# fname_root = 'Test_1_Bucket' # TESTING
+# fname_root = 'Test_2_MilkJug' # TESTING
+# fname_root = 'Test_3_RubixCube' # TESTING
+# fname_root = 'Test_4_DonutOnCube' # TESTING
 
 # Grab the filepath of the usd file
 def find_files(filename): # TODO: find a better way to search for this rather than search from root (lazy implementation)
@@ -15,9 +22,7 @@ def find_files(filename): # TODO: find a better way to search for this rather th
             result.append(os.path.join(root, filename))
     return result
 
-
-
-# USD Helper Function
+# USD Helper Functions
 def getValidProperty (primative, parameterName):
     # Get param
     prop = primative.GetProperty(parameterName)
@@ -30,6 +35,211 @@ def getValidProperty (primative, parameterName):
         return None
         #raise Exception("Requested parameter is not valid!")
 
+def getProperty (primative, parameterName): # Unsafe 
+    # Get param
+    prop = primative.GetProperty(parameterName).Get()
+
+    return prop
+
+def propertyIsValid (primative, parameterName):
+    # Get param
+    prop = primative.GetProperty(parameterName)
+    
+    # Test validity
+    if ( type(prop) == type(Usd.Attribute())): # is valid
+        return True
+    else:
+        return False
+
+def get_rot(rotation):
+    # Calculates rotation matrix given a x,y,z rotation in degrees
+    factor = 2 * np.pi / 360   # Convert to radians
+    x_angle, y_angle, z_angle = rotation[0]*factor, rotation[1]*factor, rotation[2]*factor
+    x_rot = np.array([[1,0,0],[0,np.cos(x_angle),-np.sin(x_angle)],[0,np.sin(x_angle),np.cos(x_angle)]])
+    y_rot = np.array([[np.cos(y_angle),0,np.sin(y_angle)],[0,1,0],[-np.sin(y_angle),0,np.cos(y_angle)]])
+    z_rot = np.array([[np.cos(z_angle),-np.sin(z_angle),0],[np.sin(z_angle),np.cos(z_angle),0],[0,0,1]])
+    rot_mat = np.dot(np.dot(x_rot,y_rot),z_rot)
+    return rot_mat
+
+_ALLOWED_MATERIAL_PURPOSES = (
+    UsdShade.Tokens.full,
+    UsdShade.Tokens.preview,
+    UsdShade.Tokens.allPurpose,
+)
+
+def get_bound_material(
+    prim, material_purpose=UsdShade.Tokens.allPurpose, collection=""
+):
+    # From https://github.com/ColinKennedy/USD-Cookbook/blob/master/tricks/bound_material_finder/python/material_binding_api.py 30/01/23
+    """Find the strongest material for some prim / purpose / collection.
+    If no material is found for `prim`, this function will check every
+    ancestor of Prim for a bound material and return that, instead.
+    Reference:
+        https://graphics.pixar.com/usd/docs/UsdShade-Material-Assignment.html#UsdShadeMaterialAssignment-MaterialResolve:DeterminingtheBoundMaterialforanyGeometryPrim
+    Args:
+        prim (`pxr.Usd.Prim`):
+            The path to begin looking for material bindings.
+        material_purpose (str, optional):
+            A specific name to filter materials by. Available options
+            are: `UsdShade.Tokens.full`, `UsdShade.Tokens.preview`,
+            or `UsdShade.Tokens.allPurpose`.
+            Default: `UsdShade.Tokens.allPurpose`
+        collection (str, optional):
+            The name of a collection to filter by, for any found
+            collection bindings. If not collection name is given then
+            the strongest collection is used, instead. Though generally,
+            it's recommended to always provide a collection name if you
+            can. Default: "".
+    Raises:
+        ValueError:
+            If `prim` is invalid or if `material_purpose` is not an allowed purpose.
+    Returns:
+        `pxr.UsdShade.Material` or NoneType:
+            The strongest bound material, if one is assigned.
+    """
+    def is_collection_binding_stronger_than_descendents(binding):
+        return (
+            UsdShade.MaterialBindingAPI.GetMaterialBindingStrength(
+                binding.GetBindingRel()
+            )
+            == "strongerThanDescendents"
+        )
+
+    def is_binding_stronger_than_descendents(binding, purpose):
+        """bool: Check if the given binding/purpose is allowed to override any descendent bindings."""
+        return (
+            UsdShade.MaterialBindingAPI.GetMaterialBindingStrength(
+                binding.GetDirectBindingRel(materialPurpose=purpose)
+            )
+            == "strongerThanDescendents"
+        )
+
+    def get_collection_material_bindings_for_purpose(binding, purpose):
+        """Find the closest ancestral collection bindings for some `purpose`.
+        Args:
+            binding (`pxr.UsdShade.MaterialBindingAPI`):
+                The material binding that will be used to search
+                for a direct binding.
+            purpose (str):
+                The name of some direct-binding purpose to filter by. If
+                no name is given, any direct-binding that is found gets
+                returned.
+        Returns:
+            list[`pxr.UsdShade.MaterialBindingAPI.CollectionBinding`]:
+                The found bindings, if any could be found.
+        """
+        # XXX : Note, Normally I'd just do
+        # `UsdShadeMaterialBindingAPI.GetCollectionBindings` but, for
+        # some reason, `binding.GetCollectionBindings(purpose)` does not
+        # yield the same result as parsing the relationships, manually.
+        # Maybe it's a bug?
+        #
+        # return binding.GetCollectionBindings(purpose)
+        #
+        parent = binding.GetPrim()
+
+        # TODO : We're doing quadratic work here... not sure how to improve this section
+        while not parent.IsPseudoRoot():
+            binding = binding.__class__(parent)
+
+            material_bindings = [
+                UsdShade.MaterialBindingAPI.CollectionBinding(relationship)
+                for relationship in binding.GetCollectionBindingRels(purpose)
+                if relationship.IsValid()
+            ]
+
+            if material_bindings:
+                return material_bindings
+
+            parent = parent.GetParent()
+
+        return []
+
+    def get_direct_bound_material_for_purpose(binding, purpose):
+        """Find the bound material, using direct binding, if it exists.
+        Args:
+            binding (`pxr.UsdShade.MaterialBindingAPI`):
+                The material binding that will be used to search
+                for a direct binding.
+            purpose (str):
+                The name of some direct-binding purpose to filter by. If
+                no name is given, any direct-binding that is found gets
+                returned.
+        Returns:
+            `pxr.UsdShade.Material` or NoneType: The found material, if one could be found.
+        """
+        relationship = binding.GetDirectBindingRel(materialPurpose=purpose)
+        direct = UsdShade.MaterialBindingAPI.DirectBinding(relationship)
+
+        if not direct.GetMaterial():
+            return None
+
+        material = direct.GetMaterialPath()
+        prim = binding.GetPrim().GetStage().GetPrimAtPath(material)
+
+        if not prim.IsValid():
+            return None
+
+        return UsdShade.Material(prim)
+
+    if not prim.IsValid():
+        raise ValueError('Prim "{prim}" is not valid.'.format(prim=prim))
+
+    if material_purpose not in _ALLOWED_MATERIAL_PURPOSES:
+        raise ValueError(
+            'Purpose "{material_purpose}" is not valid. Options were, "{options}".'.format(
+                material_purpose=material_purpose,
+                options=sorted(_ALLOWED_MATERIAL_PURPOSES),
+            )
+        )
+
+    purposes = {material_purpose, UsdShade.Tokens.allPurpose}
+
+    for purpose in purposes:
+        material = None
+        parent = prim
+
+        while not parent.IsPseudoRoot():
+            binding = UsdShade.MaterialBindingAPI(parent)
+
+            if not material or is_binding_stronger_than_descendents(binding, purpose):
+                material = get_direct_bound_material_for_purpose(binding, purpose)
+
+            for collection_binding in get_collection_material_bindings_for_purpose(
+                binding, purpose
+            ):
+                binding_collection = collection_binding.GetCollection()
+
+                if collection and binding_collection.GetName() != collection:
+                    continue
+
+                membership = binding_collection.ComputeMembershipQuery()
+
+                if membership.IsPathIncluded(parent.GetPath()) and (
+                    not material
+                    or is_collection_binding_stronger_than_descendents(
+                        collection_binding
+                    )
+                ):
+                    material = collection_binding.GetMaterial()
+
+            # Keep searching ancestors until we hit the scene root
+            parent = parent.GetParent()
+
+        if material:
+            return material
+
+
+
+
+
+
+
+
+
+
+
+
 
 class USDtoDAGMC:
     '''
@@ -41,7 +251,7 @@ class USDtoDAGMC:
         self.triangles      = []
         self.material_tags  = []
 
-    def add_USD_file(self, filename: str = "dagmc.usd"):
+    def add_USD_file(self, filename: str = fname_root + '.usd'):
         '''
         Load parts form USD into class with their associated material tags and then converts to triangles for use 
         in the conversion script
@@ -50,28 +260,46 @@ class USDtoDAGMC:
             filename: filename used to import the USD file with
         '''
 
-        #TODO: Add in material tags handling - just sorting out the acutal geometry at the moment
-
         stage_file = filename
         stage = Usd.Stage.Open(stage_file)
         volumeOffset = 0 # Required as all vertices have to be in a global 1D array (all volumes) => this offsets the indexing
                          # for each individual volume as all vertices for new volumes are added into the same array as previous
                          # volumes (vertices is 1D, triangles is 2D with 2nd dimension have the number of volumes in)
-        matCount = 1 #TEMP MAT FIX
 
         for primID, x in enumerate(stage.Traverse()):
             primType = x.GetTypeName()
             print(f"PRIM: {str(primType)}")
+            print(f'PrimID is {primID}')
 
             if str(primType) == 'Mesh':
-                #print(x.GetPropertyNames())
-                # GET MATERIAL NAME HERE - NEEDED FOR MATERIALS STUFF LATER - IMPLEMENTED ONLY WITH DUMMY MAT NAMES SO FAR
+                # Get the material type of the meshes
+                material_name = str(get_bound_material(x))
+                try:
+                    material_name = material_name.split('<')[1] # Just get material name from between <>
+                    material_name = material_name.split('>')[0] # In form of UsdShade.Material(Usd.Prim(</World/Looks/Aluminum_Anodized>))
+                    material_name = material_name.split('/')[-1] # Get the last name from file path
+                    print(material_name)
+                except:
+                    print('No material found')
 
                 # Get num of vertecies in elements
                 allVertexCounts  = np.array(getValidProperty(x,"faceVertexCounts"))
                 allVertexIndices = np.array(getValidProperty(x,"faceVertexIndices"))
+
+                # Get if there is rotation or translation of the meshes
+                rotation = [0,0,0] if not propertyIsValid(x,"xformOp:rotateXYZ") else list(getProperty(x,"xformOp:rotateXYZ"))
+                translation = np.array([0,0,0]) if not propertyIsValid(x,"xformOp:translate") else np.array(list(getProperty(x,"xformOp:translate")))
+                print(f'Rotation is {rotation}')
+                print(f'Translation is {translation}')
+
+                rot_matrix = get_rot(rotation)
+                print(rot_matrix)
                 
-                newVertices = np.array(getValidProperty(x,"points"), dtype='float64') # Assign vertices here
+                # TODO: Make the rotation matrix multiplication better! Lazy coding for now...
+                newVertices = np.array(getValidProperty(x,"points"), dtype='float64') # Assign vertices here and add rotation and translation
+                newVertices = np.array([np.dot(rot_matrix,xyz) for xyz in newVertices]) # Have to rotate first before translating as it rotates around the origin
+                newVertices = newVertices + translation
+
                 if self.vertices.size == 0: # For first run though just set vertices to newVertices array
                     self.vertices = newVertices
                 else:
@@ -122,8 +350,7 @@ class USDtoDAGMC:
 
                 
                 self.triangles.append(trianglesForVolume)
-                self.material_tags.append(f"mat{matCount}") #TEMP MAT FIX
-                matCount += 1 #TEMP MAT FIX
+                self.material_tags.append(material_name)
                 shapeVertices = np.shape(newVertices)
                 volumeOffset += shapeVertices[0] + extraPointCount # Account for all points plus any extras added in from Counts>4
 
@@ -132,7 +359,7 @@ class USDtoDAGMC:
             
             print("\n\n")
 
-    def save_to_h5m(self, filename: str = 'dagmc.h5m'):
+    def save_to_h5m(self, filename: str = fname_root + '.h5m'):
         '''
         Use the verticies saved in the class to convert to h5m using the vertices_to_h5m mini package
         https://github.com/fusion-energy/vertices_to_h5m
@@ -148,7 +375,7 @@ class USDtoDAGMC:
             h5m_filename=filename,
         )
 
-filepath = find_files('dagmc.usd')
+filepath = find_files(fname_root + '.usd')
 convert = USDtoDAGMC()
 convert.add_USD_file(filename = filepath[0])
 convert.save_to_h5m()

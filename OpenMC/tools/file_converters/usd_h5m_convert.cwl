@@ -16,10 +16,11 @@ inputs:
     type: File
     
 outputs:
-  h5m_out:
+  dagmc_CAD:
     type: File
     outputBinding:
       glob: dagmc.h5m
+      # glob: Test_4_DonutOnCube.h5m # Test case
 #   example_out:
 #     type: stdout
 # stdout: output.txt
