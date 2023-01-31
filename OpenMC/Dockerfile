@@ -252,4 +252,6 @@ RUN pip install openmc_data  && \
     cd tasks/task_14_activation_transmutation_depletion/ && \
     download_nndc_chain
 
+RUN pip install usd-core
+
 ENV OPENMC_CROSS_SECTIONS=/nuclear_data/cross_sections.xml
