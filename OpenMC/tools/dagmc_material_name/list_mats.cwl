@@ -6,7 +6,7 @@ class: CommandLineTool
 baseCommand: ['mbsize', '-ll']
 hints:
   DockerRequirement:
-    dockerPull: williamjsmith15/omniflow_openmc-env:latest
+    dockerPull: williamjsmith15/omniflow-openmc:latest
 inputs:
   h5m_CAD_in:
     type: File

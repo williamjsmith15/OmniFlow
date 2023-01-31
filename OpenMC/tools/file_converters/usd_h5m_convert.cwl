@@ -6,7 +6,7 @@ class: CommandLineTool
 baseCommand: python
 hints:
   DockerRequirement:
-    dockerPull: williamjsmith15/omniflow_openmc-env:latest
+    dockerPull: williamjsmith15/omniflow-openmc:latest
 inputs:
   usd_h5m_script:
     type: File
