@@ -6,7 +6,7 @@ class: CommandLineTool
 baseCommand: mbconvert
 hints:
   DockerRequirement:
-    dockerPull: williamjsmith15/omniflow_openmc-env:latest
+    dockerPull: williamjsmith15/omniflow-openmc:latest
 inputs:
   CAD_in:
     type: File
