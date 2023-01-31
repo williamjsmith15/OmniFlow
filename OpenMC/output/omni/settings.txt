@@ -1,10 +1,10 @@
 MATERIALS
-Red_Glass Fe 7.699999809265137
-Copper Fe 7.699999809265137
-Dirt Fe 7.699999809265137
+Steel_Cast Fe 7.699999809265137
+Gold_01 Fe 7.699999809265137
+Concrete_Smooth Fe 7.699999809265137
 SOURCES
 12.0 0.0 0.0 0.0
 SETTINGS
 batches 10
-particles 1000
-run_mode fixed mode
+particles 5000
+run_mode fixed source

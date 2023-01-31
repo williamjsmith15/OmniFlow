@@ -114,7 +114,7 @@ for source in sources:
     source_pnt = openmc.stats.Point(xyz=(float(source[1]), float(source[2]), float(source[3])))
     source = openmc.Source(space=source_pnt, energy=openmc.stats.Discrete(x=[float(source[0]),], p=[1.0,]))
     sources.append(source)
-source_str = 1.0 / len(sources)
+source_str = 1.0 #/ len(sources)
 for source in sources:
     source.strength = source_str
 settings_file.source = sources
@@ -122,15 +122,16 @@ settings_file.source = sources
 # Settings
 for setting in settings:
     try:
-        match setting[0]:
-            case "batches":
-                settings_file.batches = int(setting[1])
-            case "particles":
-                settings_file.particles = int(setting[1])
-            case "run_mode":
-                settings_file.run_mode = str(setting[1])
+        if setting[0] == "batches":     # Apparently the version of python being used is not new enough for swtich statements... :(
+            settings_file.batches = int(setting[1])
+        elif setting[0] == "particles":
+            settings_file.particles = int(setting[1])
+        elif setting[0] == "run_mode":
+            settings_file.run_mode = str(" ".join(setting[1:]))
+        else:
+            print(f"Setting: {setting} did not match one of the expected cases.")
     except:
-        print(f"Setting: {setting} did not match one of the expected cases.")
+        print(f"There was an error with setting {setting} somewhere...")
 
 settings_file.export_to_xml()
 
