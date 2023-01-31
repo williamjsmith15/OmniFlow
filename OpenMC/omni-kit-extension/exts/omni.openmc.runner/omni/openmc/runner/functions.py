@@ -137,8 +137,11 @@ def get_materials():
     # Gets material names from the dagmc.h5m file (if its in the paramak folder)
     print("Getting Material Names")
 
+    print('Exporting File')
+    export_stage()
+
+    print('Running materials getter')
     print(f"cwltool --outdir {paths['output_omni']} --no-match-user {paths['workflow']}{sep}dagmc_material_name{sep}dagmc_materials.cwl {paths['workflow']}{sep}dagmc_material_name{sep}dagmc_materials.yml")
-        
     os.system(f"cwltool --outdir {paths['output_omni']} --no-match-user {paths['workflow']}{sep}dagmc_material_name{sep}dagmc_materials.cwl {paths['workflow']}{sep}dagmc_material_name{sep}dagmc_materials.yml")
 
     print("DONE")

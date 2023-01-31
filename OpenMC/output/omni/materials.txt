@@ -1,2 +1,2 @@
-    mat1
-    mat2
+    Blue_Glass
+    Brick_Wall_Red
