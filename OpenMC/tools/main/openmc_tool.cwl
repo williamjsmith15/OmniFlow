@@ -7,7 +7,6 @@ baseCommand: python
 hints:
   DockerRequirement:
     dockerPull: williamjsmith15/omniflow-openmc:latest
-    # dockerPull: williamjsmith15/omniflow_openmc-env:latest
 inputs:
   script:
     type: File

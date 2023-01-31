@@ -2,9 +2,17 @@ script:
   class: File
   path: general_CAD.py
 str: dagmc.vtk
-dagmc_CAD:
+usd_CAD:
   class: File
-  path: ../../paramak/dagmc.h5m
+  path: ../../output/omni/dagmc.usd
 settings:
   class: File
   path: ../../output/omni/settings.txt
+usd_h5m_script:
+  class: File
+  path: ../file_converters/usd_h5m.py
+
+  # Test running: 
+  # cwltool --outdir /home/williamjsmith15/PhD/OmniFlow/TEST/Test_USD/output /home/williamjsmith15/PhD/OmniFlow/OpenMC/tools/file_converters/usd_h5m_convert.cwl /home/williamjsmith15/PhD/OmniFlow/OpenMC/tools/file_converters/usd_h5m_convert.yml
+
+  # cwltool --no-match-user --outdir /home/williamjsmith15/PhD/OmniFlow/TEST/Test_USD/output/ /home/williamjsmith15/PhD/OmniFlow/OpenMC/tools/main/openmc_workflow.cwl /home/williamjsmith15/PhD/OmniFlow/OpenMC/tools/main/script_loc.yml 
