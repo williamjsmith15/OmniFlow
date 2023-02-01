@@ -278,7 +278,7 @@ class USDtoDAGMC:
                     material_name = material_name.split('<')[1] # Just get material name from between <>
                     material_name = material_name.split('>')[0] # In form of UsdShade.Material(Usd.Prim(</World/Looks/Aluminum_Anodized>))
                     material_name = material_name.split('/')[-1] # Get the last name from file path
-                    print(material_name)
+                    print(f"Material name is: {material_name}")
                 except:
                     print('No material found')
 
@@ -293,7 +293,6 @@ class USDtoDAGMC:
                 print(f'Translation is {translation}')
 
                 rot_matrix = get_rot(rotation)
-                print(rot_matrix)
                 
                 # TODO: Make the rotation matrix multiplication better! Lazy coding for now...
                 newVertices = np.array(getValidProperty(x,"points"), dtype='float64') # Assign vertices here and add rotation and translation
