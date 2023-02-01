@@ -266,12 +266,15 @@ class USDtoDAGMC:
                          # for each individual volume as all vertices for new volumes are added into the same array as previous
                          # volumes (vertices is 1D, triangles is 2D with 2nd dimension have the number of volumes in)
 
+        material_count = 0 # For materials that 'fall through the net'
+
         for primID, x in enumerate(stage.Traverse()):
             primType = x.GetTypeName()
             print(f"PRIM: {str(primType)}")
             print(f'PrimID is {primID}')
 
             if str(primType) == 'Mesh':
+                material_count += 1
                 # Get the material type of the meshes
                 material_name = str(get_bound_material(x))
                 try:
@@ -280,7 +283,9 @@ class USDtoDAGMC:
                     material_name = material_name.split('/')[-1] # Get the last name from file path
                     print(f"Material name is: {material_name}")
                 except:
+                    material_name = f"mesh_{material_count}"
                     print('No material found')
+                    print(f'Setting material name to default: {material_name}')
 
                 # Get num of vertecies in elements
                 allVertexCounts  = np.array(getValidProperty(x,"faceVertexCounts"))
