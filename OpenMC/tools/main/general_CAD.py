@@ -28,9 +28,9 @@ for root, dirs, files in os.walk(cwl_folder):
             geometry_path = os.path.join(root, file)
 
 # Get all settings out
-materials = []
-sources = []
-settings = []
+materials_input = []
+sources_input = []
+settings_input = []
 position = 0
 with open(settings_path) as f:
     for line in f:
@@ -41,17 +41,17 @@ with open(settings_path) as f:
             if "SOURCES" in line:
                 position = 2
             else:
-                materials.append(line.split())
+                materials_input.append(line.split())
         elif position == 2:
             if "SETTINGS" in line:
                 position = 3
             else:
-                sources.append(line.split())
+                sources_input.append(line.split())
         elif position == 3:
             if "EXT_SETTINGS" in line:
                 position = 4
             else:
-                settings.append(line.split())
+                settings_input.append(line.split())
         
 
 ##################
@@ -59,14 +59,20 @@ with open(settings_path) as f:
 ##################
 
 tmp_material_array = []
-for material in materials:
+# Temp for testing
+# for material in materials_input:
+#     tmp_material = openmc.Material(name = material[0])
+#     tmp_material.add_element('Fe', 1, 'ao')
+#     tmp_material.set_density("g/cm3", 7.7)
+#     tmp_material_array.append(tmp_material)
+for material in materials_input:
     tmp_material = openmc.Material(name = material[0])
     tmp_material.add_element(material[1], 1, "ao")
     tmp_material.set_density("g/cm3", float(material[2]))
     tmp_material_array.append(tmp_material)
 
-materials_file = openmc.Materials(tmp_material_array)
-materials_file.export_to_xml()
+materials = openmc.Materials(tmp_material_array)
+materials.export_to_xml()
 
 ##################
 # DEFINE GEOMETRY
@@ -78,7 +84,7 @@ dagmc_univ = openmc.DAGMCUniverse(filename=geometry_path)
 # geometry.export_to_xml()
 
 # creates an edge of universe boundary surface
-vac_surf = openmc.Sphere(r=10000, surface_id=9999, boundary_type="vacuum")
+vac_surf = openmc.Sphere(r=100000, surface_id=9999, boundary_type="vacuum")
 # adds reflective surface for the sector model at 0 degrees
 reflective_1 = openmc.Plane(
     a=math.sin(0),
@@ -109,32 +115,33 @@ geometry.export_to_xml()
 # DEFINE SETTINGS
 ##################
 
-settings_file = openmc.Settings()
+settings = openmc.Settings()
 
 # Sources
-for source in sources:
+sources = []
+for source in sources_input:
     source_pnt = openmc.stats.Point(xyz=(float(source[1]), float(source[2]), float(source[3])))
     source = openmc.Source(space=source_pnt, energy=openmc.stats.Discrete(x=[float(source[0]),], p=[1.0,]))
     sources.append(source)
 source_str = 1.0 / len(sources)
 for source in sources:
     source.strength = source_str
-settings_file.source = sources
+settings.source = sources
 
 # Settings
-for setting in settings:
+for setting in settings_input:
     try:
         if setting[0] == "batches":     # Apparently the version of python being used is not new enough for swtich statements... :(
-            settings_file.batches = int(setting[1])
+            settings.batches = int(setting[1])
         elif setting[0] == "particles":
-            settings_file.particles = int(setting[1])
+            settings.particles = int(setting[1])
         elif setting[0] == "run_mode":
-            settings_file.run_mode = str(" ".join(setting[1:]))
+            settings.run_mode = str(" ".join(setting[1:]))
         else:
             print(f"Setting: {setting} did not match one of the expected cases.")
     except:
         print(f"There was an error with setting {setting} somewhere...")
 
-settings_file.export_to_xml()
+settings.export_to_xml()
 
 openmc.run(tracks=True) # Run in tracking mode for visualisation of tracks through CAD
