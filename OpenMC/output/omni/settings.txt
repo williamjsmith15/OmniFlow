@@ -9,11 +9,11 @@ SOURCES
 0.0 0.0 0.0 0.0
 0.0 0.0 0.0 0.0
 SETTINGS
-batches 29
-particles 23
+batches 10
+particles 1000
 run_mode fixed source
 EXT_SETTINGS
-num_sources 2
+num_sources 5
 test_dropdown True
 mats_dropdown True
 sets_dropdown False

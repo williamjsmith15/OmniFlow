@@ -5,7 +5,7 @@ from .functions import *
 import numpy as np
 import os
 
-LABEL_WIDTH = 120
+LABEL_WIDTH = 80
 SPACING = 4
 
 
