@@ -147,13 +147,6 @@ def get_materials():
 
     print("Materials Getter Finished")
 
-
-def settings_enter(num_source):
-    #To remember the number of sources field
-    with open(f"{paths['output_omni']}{sep}num_sources.txt", 'w') as file:
-        file.write(f"num_sources = {num_source}")
-
-
 def export_stage():
     print(f"Exporting stage to: {paths['output_omni']}/dagmc.usd")
     stage = omni.usd.get_context().get_stage()

@@ -48,7 +48,10 @@ with open(settings_path) as f:
             else:
                 sources.append(line.split())
         elif position == 3:
-            settings.append(line.split())
+            if "EXT_SETTINGS" in line:
+                position = 4
+            else:
+                settings.append(line.split())
         
 
 ##################
@@ -109,12 +112,11 @@ geometry.export_to_xml()
 settings_file = openmc.Settings()
 
 # Sources
-sources = []
 for source in sources:
     source_pnt = openmc.stats.Point(xyz=(float(source[1]), float(source[2]), float(source[3])))
     source = openmc.Source(space=source_pnt, energy=openmc.stats.Discrete(x=[float(source[0]),], p=[1.0,]))
     sources.append(source)
-source_str = 1.0 #/ len(sources)
+source_str = 1.0 / len(sources)
 for source in sources:
     source.strength = source_str
 settings_file.source = sources

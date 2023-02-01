@@ -16,9 +16,35 @@ class Window(ui.Window):
     settings_dict = {
         'sources'       : [],
         'materials'     : [],
+
+        # Run settings
         'batches'       : 0,
         'particles'     : 0,
-        'run mode'      : 'fixed source'
+        'run_mode'      : 'fixed source',
+
+        # All system / extension settings
+        'num_sources'   : 1,
+        'test_dropdown' : False,
+        'mats_dropdown' : False,
+        'sets_dropdown' : True,
+        'srcs_dropdown' : False
+    }
+
+    previous_settings = {
+        'sources'       : [],
+        'materials'     : [],
+
+        # Run settings
+        'batches'       : 0,
+        'particles'     : 0,
+        'run_mode'      : 'fixed source',
+
+        # All system / extension settings
+        'num_sources'   : 1,
+        'test_dropdown' : False,
+        'mats_dropdown' : False,
+        'sets_dropdown' : True,
+        'srcs_dropdown' : False
     }
 
     def __init__(self, title: str, delegate=None, **kwargs):
@@ -45,17 +71,20 @@ class Window(ui.Window):
         self.__label_width = value
         self.frame.rebuild()
 
-    def _run_workflow_button(self):
-        self.generate()
-        run_workflow()
+    ##########################
+    # --- BUILD FRAMES ---
+    ##########################
 
     def _build_run(self):
         # Build the widgets of the Run group 
         with ui.VStack(height=0, spacing=SPACING):
             ui.Label("OpenMC Workflow Run and Settings")
             ui.Button("Run Workflow", clicked_fn=lambda: self._run_workflow_button())
-            ui.Button("Refresh Screen", clicked_fn=lambda: self.frame.rebuild())
-            with ui.CollapsableFrame("Test", collapsed = True):
+            ui.Button("Save State", clicked_fn=lambda: self._save_state_button())
+
+            self.settings_dict['test_dropdown'] = ui.CollapsableFrame("Test", collapsed = self.t_f(self.previous_settings['test_dropdown']))
+            with self.settings_dict['test_dropdown']:
+
                 with ui.HStack():
                     ui.Button("Run Toy Test", clicked_fn=lambda: toy_test())
                     ui.Button("Run Simple CAD Test", clicked_fn=lambda: simple_CAD_test())
@@ -74,7 +103,9 @@ class Window(ui.Window):
                     materials.append(line)
 
         # Build the widgets of the Materials
-        with ui.CollapsableFrame("Materials", collapsed = True):
+        self.settings_dict['mats_dropdown'] = ui.CollapsableFrame("Materials", collapsed = self.t_f(self.previous_settings['mats_dropdown']))
+        with self.settings_dict['mats_dropdown']:
+
             with ui.VStack(height=0, spacing=SPACING):
                 ui.Button("Get Materials", clicked_fn=lambda: _get_materials_button())
                 # Uses the materials list to create a stack of materials to edit properties
@@ -96,47 +127,39 @@ class Window(ui.Window):
 
     def _build_settings(self):
         # Build the widgets of the Settings group
+        self.settings_dict['sets_dropdown'] = ui.CollapsableFrame("Settings", collapsed = self.t_f(self.previous_settings['sets_dropdown']))
 
-        def _enter_button():
-            settings_enter(self.num_sources_slider.as_int)
-            self.frame.rebuild()
+        with self.settings_dict['sets_dropdown']:
 
-        with ui.CollapsableFrame("Settings"):
             with ui.VStack(height=0, spacing=SPACING):
 
                 with ui.HStack():
                     ui.Label("Batches", width=self.label_width)
                     self.settings_dict['batches'] = ui.IntField().model
+                    self.settings_dict['batches'].set_value(int(self.previous_settings['batches']))
 
                 with ui.HStack():
                     ui.Label("Particles", width=self.label_width)
                     self.settings_dict['particles'] = ui.IntField().model
+                    self.settings_dict['particles'].set_value(int(self.previous_settings['particles']))
 
                 with ui.HStack():
                     ui.Label("Run Mode", width=self.label_width)
-                    self.settings_dict['run mode'] = ui.StringField().model
+                    self.settings_dict['run_mode'] = ui.StringField().model
+                    self.settings_dict['run_mode'].set_value(str(self.previous_settings['run_mode']))
 
                 with ui.HStack():
                     ui.Label("Sources", width=self.label_width)
-                    self.num_sources_slider = ui.IntField().model
-                    ui.Button("Enter", clicked_fn=lambda: _enter_button())
+                    self.settings_dict['num_sources'] = ui.IntField().model
+                    self.settings_dict['num_sources'].set_value(int(self.previous_settings['num_sources']))
+                    ui.Button("Enter", clicked_fn=lambda: self._save_state_button())
 
-                num_sources = 0
+                self.settings_dict['srcs_dropdown'] = ui.CollapsableFrame("Sources", collapsed = self.t_f(self.previous_settings['srcs_dropdown']))
+                with self.settings_dict['srcs_dropdown']:
 
-                if os.path.exists(f"{paths['output_omni']}{paths['sep']}num_sources.txt"):
-                    with open(f"{paths['output_omni']}{paths['sep']}num_sources.txt") as file:
-                        for line in file:
-                            if "num_sources = " in line:
-                                tmp = line.replace('num_sources = ', '')
-                                num_sources = int(tmp)
-                                self.num_sources_slider.set_value(num_sources)
-                else:
-                    print("Can't find num_sources.txt")
-
-                with ui.CollapsableFrame("Sources", collapsed = True):
                     with ui.VStack(height=0, spacing=SPACING):
                         self.settings_dict['sources'] = []
-                        for i in range(1, num_sources + 1):
+                        for i in range(1, int(self.previous_settings['num_sources']) + 1):
                             tmp_array = [None] * 4
                             with ui.VStack(height=0, spacing=SPACING):
                                 with ui.HStack(spacing=SPACING):
@@ -149,10 +172,47 @@ class Window(ui.Window):
                                     tmp_array[3] = ui.FloatField().model
                             self.settings_dict['sources'].append(tmp_array)
 
-    def generate(self):
-        #Something to convert settings and materials into a txt file for the general CAD py script to use
+    def _build_export(self):
+        with ui.VStack(height=0, spacing=SPACING):
+            ui.Button("Export USD Stage", clicked_fn=lambda: export_stage())
 
-        print("Converting Materials and Settings")
+    def _build_fn(self):
+        """
+        The method that is called to build all the UI once the window is
+        visible.
+        """
+        self.load_state()
+
+        with ui.ScrollingFrame():
+            with ui.VStack(height=0):
+                self._build_run()
+                self._build_materials()
+                self._build_settings()
+                self._build_export()
+
+
+    ##########################
+    # --- BUTTONS ---
+    ##########################
+
+    def _run_workflow_button(self):
+        self.generate()
+        run_workflow()
+
+    def _save_state_button(self):
+        # Saves the state of the extension
+        self.generate()
+
+        print('Refreshing screen')
+        self.frame.rebuild()
+
+    ##########################
+    # --- EXTRA FUNCTIONS ---
+    ##########################
+
+    def generate(self):
+    # Converts settings and materials into a txt file for the general CAD py script to use
+        print("Saving Materials and Settings")
 
         with open(f"{paths['output_omni']}{paths['sep']}settings.txt", 'w') as file:
             # Materials
@@ -165,30 +225,56 @@ class Window(ui.Window):
                 file.write(f"{src[0].get_value_as_float()} {src[1].get_value_as_float()} {src[2].get_value_as_float()} {src[3].get_value_as_float()}\n")
             # Settings 
             file.write('SETTINGS\n')
+            print(self.settings_dict['batches'])
             file.write(f"batches {self.settings_dict['batches'].get_value_as_int()}\n")
             file.write(f"particles {self.settings_dict['particles'].get_value_as_int()}\n")
-            file.write(f"run_mode {self.settings_dict['run mode'].get_value_as_string()}\n")
+            file.write(f"run_mode {self.settings_dict['run_mode'].get_value_as_string()}\n")
+
+            file.write('EXT_SETTINGS\n')
+            file.write(f"num_sources {self.settings_dict['num_sources'].get_value_as_int()}\n")
+            file.write(f"test_dropdown {self.settings_dict['test_dropdown'].collapsed}\n")
+            file.write(f"mats_dropdown {self.settings_dict['mats_dropdown'].collapsed}\n")
+            file.write(f"sets_dropdown {self.settings_dict['sets_dropdown'].collapsed}\n")
+            file.write(f"srcs_dropdown {self.settings_dict['srcs_dropdown'].collapsed}\n")
+            
+
         print("Finished Converting")
 
-    def _build_generate(self):
-        with ui.VStack(height=0, spacing=SPACING):
-            ui.Button("Generate Files", clicked_fn=lambda: self.generate())
+    def load_state(self):
+        position = 0
+        self.previous_settings = {}
 
-    def _build_export(self):
-        with ui.VStack(height=0, spacing=SPACING):
-            ui.Button("Export USD Stage", clicked_fn=lambda: export_stage())
+        with open(f"{paths['output_omni']}{paths['sep']}settings.txt", 'r') as file:
+            for line in file:
+                split_line = line.split()
+                if position == 0:
+                    if "MATERIALS" in line:
+                        position = 1
+                        self.previous_settings['materials'] = []
+                elif position == 1:
+                    if "SOURCES" in line:
+                        position = 2
+                        self.previous_settings['sources'] = []
+                    else:
+                        self.previous_settings['materials'].append(split_line)
+                elif position == 2:
+                    if "SETTINGS" in line:
+                        position = 3
+                    else:
+                        self.previous_settings['sources'].append(split_line)
+                elif position == 3:
+                    if "EXT_SETTINGS" in line:
+                        position = 4
+                    else:
+                        self.previous_settings[split_line[0]] = ' '.join(split_line[1:])
+                elif position == 4:
+                    self.previous_settings[split_line[0]] = ' '.join(split_line[1:])
 
-    def _build_fn(self):
-        """
-        The method that is called to build all the UI once the window is
-        visible.
-        """
-        with ui.ScrollingFrame():
-            with ui.VStack(height=0):
-                self._build_run()
-                self._build_materials()
-                self._build_settings()
-                self._build_generate()
-                self._build_export()
-
-    
+    def t_f(self, string):
+        if string == 'True':
+            return True
+        elif string == 'False':
+            return False
+        else:
+            print('I dont knwo what this is, returingin default of false')
+            return False

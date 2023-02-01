@@ -1,10 +1,20 @@
 MATERIALS
-Steel_Cast Fe 7.699999809265137
-Gold_01 Fe 7.699999809265137
-Concrete_Smooth Fe 7.699999809265137
+Steel_Cast  0.0
+Gold_01  0.0
+Concrete_Smooth  0.0
 SOURCES
-12.0 0.0 0.0 0.0
+0.0 0.0 0.0 0.0
+0.0 0.0 0.0 0.0
+0.0 0.0 0.0 0.0
+0.0 0.0 0.0 0.0
+0.0 0.0 0.0 0.0
 SETTINGS
-batches 10
-particles 5000
+batches 29
+particles 23
 run_mode fixed source
+EXT_SETTINGS
+num_sources 2
+test_dropdown True
+mats_dropdown True
+sets_dropdown False
+srcs_dropdown False
