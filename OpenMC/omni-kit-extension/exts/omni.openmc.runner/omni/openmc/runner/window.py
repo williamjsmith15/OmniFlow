@@ -91,9 +91,6 @@ class Window(ui.Window):
 
     def _build_materials(self):
         # Takes the material.txt file and reads all the material names into teh materails list
-        def _get_materials_button():
-            get_materials()
-            self.frame.rebuild()
 
         mat_file_path = f"{paths['output_omni']}{paths['sep']}materials.txt"
         materials = []
@@ -107,21 +104,27 @@ class Window(ui.Window):
         with self.settings_dict['mats_dropdown']:
 
             with ui.VStack(height=0, spacing=SPACING):
-                ui.Button("Get Materials", clicked_fn=lambda: _get_materials_button())
+                ui.Button("Get Materials", clicked_fn=lambda: self._save_state_button(get_mats=True))
                 # Uses the materials list to create a stack of materials to edit properties
                 self.settings_dict['materials'] = []
-                for material in materials:
-                    tmp_array = [None] * 3
-                    tmp_array[0] = material
+
+                for i in range(len(self.previous_settings['materials'])):
+                    self.settings_dict['materials'].append([None]*3)
+                    self.settings_dict['materials'][i][0] = self.previous_settings['materials'][i][0]
                     with ui.HStack(spacing = SPACING):
-                        ui.Label(material, width=self.label_width)
+                        ui.Label(self.previous_settings['materials'][i][0], width=self.label_width)
+
                         ui.Label("Element")
-                        tmp_array[1] = ui.StringField().model
+                        self.settings_dict['materials'][i][1] = ui.StringField().model
+                        if str(self.previous_settings['materials'][i][1]) != 'None':
+                            self.settings_dict['materials'][i][1].set_value(str(self.previous_settings['materials'][i][1]))
+
                         # ui.Label("Atom Percent", width=self.label_width)
                         # tmp_array[1] = ui.FloatField().model
+
                         ui.Label("Density (g/cm^3)")
-                        tmp_array[2] = ui.FloatField().model
-                    self.settings_dict['materials'].append(tmp_array)
+                        self.settings_dict['materials'][i][2] = ui.FloatField().model
+                        self.settings_dict['materials'][i][2].set_value(str(self.previous_settings['materials'][i][2]))
 
 
 
@@ -216,9 +219,9 @@ class Window(ui.Window):
         self.generate()
         run_workflow()
 
-    def _save_state_button(self):
+    def _save_state_button(self, get_mats=False):
         # Saves the state of the extension
-        self.generate()
+        self.generate(get_mats)
 
         print('Refreshing screen')
         self.frame.rebuild()
@@ -227,26 +230,32 @@ class Window(ui.Window):
     # --- EXTRA FUNCTIONS ---
     ##########################
 
-    def generate(self):
+    def generate(self, get_mats=False):
     # Converts settings and materials into a txt file for the general CAD py script to use
         print("Saving Materials and Settings")
+
+        if get_mats:
+            materials = get_materials()
 
         with open(f"{paths['output_omni']}{paths['sep']}settings.txt", 'w') as file:
             # Materials
             file.write('MATERIALS\n')
             # count = 0     # DEBUGGING
-            for mat in self.settings_dict['materials']:
-                # count += 1
-                # file.write(f"mesh_{count} Fe 7.7\n")
-                file.write(f"{mat[0].replace(' ', '')[:-1]} {mat[1].get_value_as_string()} {mat[2].get_value_as_float()}\n")
+            if get_mats: # Just write the materials to the settings file, no element or density
+                for mat in materials:
+                    file.write(f"{mat}")
+            else:        # Write the material settings set in omni
+                for mat in self.settings_dict['materials']:
+                    # count += 1
+                    # file.write(f"mesh_{count} Fe 7.7\n")
+                    file.write(f"{mat[0].replace(' ', '')} {mat[1].get_value_as_string()} {mat[2].get_value_as_float()}\n")
+            
             # Sources
             file.write('SOURCES\n')
-            print(self.settings_dict['sources'])
             for src in self.settings_dict['sources']:
                 file.write(f"{src[0].get_value_as_float()} {src[1].get_value_as_float()} {src[2].get_value_as_float()} {src[3].get_value_as_float()}\n")
             # Settings 
             file.write('SETTINGS\n')
-            print(self.settings_dict['batches'])
             file.write(f"batches {self.settings_dict['batches'].get_value_as_int()}\n")
             file.write(f"particles {self.settings_dict['particles'].get_value_as_int()}\n")
             file.write(f"run_mode {self.settings_dict['run_mode'].get_value_as_string()}\n")
@@ -277,7 +286,10 @@ class Window(ui.Window):
                         position = 2
                         self.previous_settings['sources'] = []
                     else:
-                        self.previous_settings['materials'].append(split_line)
+                        if len(split_line) == 3:
+                            self.previous_settings['materials'].append(split_line)
+                        else:
+                            self.previous_settings['materials'].append([split_line[0], None, 0.0])
                 elif position == 2:
                     if "SETTINGS" in line:
                         position = 3
@@ -297,5 +309,5 @@ class Window(ui.Window):
         elif string == 'False':
             return False
         else:
-            print('I dont knwo what this is, returingin default of false')
+            print('I dont know what this is, returning default of false')
             return False

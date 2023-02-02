@@ -145,7 +145,16 @@ def get_materials():
     print(f"cwltool --outdir {paths['output_omni']} --no-match-user {paths['workflow']}{sep}dagmc_material_name{sep}dagmc_materials.cwl {paths['workflow']}{sep}dagmc_material_name{sep}dagmc_materials.yml")
     os.system(f"cwltool --outdir {paths['output_omni']} --no-match-user {paths['workflow']}{sep}dagmc_material_name{sep}dagmc_materials.cwl {paths['workflow']}{sep}dagmc_material_name{sep}dagmc_materials.yml")
 
+    mat_file_path = f"{paths['output_omni']}{paths['sep']}materials.txt"
+    materials = []
+    if os.path.exists(mat_file_path):
+        with open(mat_file_path) as file:
+            for line in file:
+                materials.append(line)
+
     print("Materials Getter Finished")
+
+    return materials
 
 def export_stage():
     print(f"Exporting stage to: {paths['output_omni']}/dagmc.usd")
