@@ -159,18 +159,35 @@ class Window(ui.Window):
 
                     with ui.VStack(height=0, spacing=SPACING):
                         self.settings_dict['sources'] = []
-                        for i in range(1, int(self.previous_settings['num_sources']) + 1):
-                            tmp_array = [None] * 4
+                        for i in range(int(self.previous_settings['num_sources'])):
+                            self.settings_dict['sources'].append([None]*4)
+                            
                             with ui.VStack(height=0, spacing=SPACING):
-                                with ui.HStack(spacing=SPACING):
-                                    ui.Label(f"Source {i}", width=self.label_width)
-                                    ui.Label("Energy:", width=self.label_width)
-                                    tmp_array[0] = ui.FloatField().model
-                                    ui.Label("Location:", width=self.label_width)
-                                    tmp_array[1] = ui.FloatField().model
-                                    tmp_array[2] = ui.FloatField().model
-                                    tmp_array[3] = ui.FloatField().model
-                            self.settings_dict['sources'].append(tmp_array)
+                                if i < len(self.previous_settings['sources']):
+                                    with ui.HStack(spacing=SPACING):
+                                        ui.Label(f"Source {i+1}", width=self.label_width)
+                                        ui.Label("Energy:", width=self.label_width)
+                                        self.settings_dict['sources'][i][0] = ui.FloatField().model
+                                        self.settings_dict['sources'][i][0].set_value(float(self.previous_settings['sources'][i][0]))
+
+                                        ui.Label("Location:", width=self.label_width)
+                                        self.settings_dict['sources'][i][1] = ui.FloatField().model
+                                        self.settings_dict['sources'][i][1].set_value(float(self.previous_settings['sources'][i][1]))
+                                        self.settings_dict['sources'][i][2] = ui.FloatField().model
+                                        self.settings_dict['sources'][i][2].set_value(float(self.previous_settings['sources'][i][2]))
+                                        self.settings_dict['sources'][i][3] = ui.FloatField().model
+                                        self.settings_dict['sources'][i][3].set_value(float(self.previous_settings['sources'][i][3]))
+                                else:   # Handling for sources added that aren't in the settings file
+                                    with ui.HStack(spacing=SPACING):
+                                        ui.Label(f"Source {i+1}", width=self.label_width)
+                                        ui.Label("Energy:", width=self.label_width)
+                                        self.settings_dict['sources'][i][0] = ui.FloatField().model
+
+                                        ui.Label("Location:", width=self.label_width)
+                                        self.settings_dict['sources'][i][1] = ui.FloatField().model
+                                        self.settings_dict['sources'][i][2] = ui.FloatField().model
+                                        self.settings_dict['sources'][i][3] = ui.FloatField().model
+
 
     def _build_export(self):
         with ui.VStack(height=0, spacing=SPACING):
@@ -224,6 +241,7 @@ class Window(ui.Window):
                 file.write(f"{mat[0].replace(' ', '')[:-1]} {mat[1].get_value_as_string()} {mat[2].get_value_as_float()}\n")
             # Sources
             file.write('SOURCES\n')
+            print(self.settings_dict['sources'])
             for src in self.settings_dict['sources']:
                 file.write(f"{src[0].get_value_as_float()} {src[1].get_value_as_float()} {src[2].get_value_as_float()} {src[3].get_value_as_float()}\n")
             # Settings 
