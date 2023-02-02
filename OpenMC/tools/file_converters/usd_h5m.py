@@ -284,7 +284,7 @@ class USDtoDAGMC:
                     print(f"Material name is: {material_name}")
                 except:
                     material_name = f"mesh_{material_count}"
-                    print('No material found')
+                    print('No USD material found')
                     print(f'Setting material name to default: {material_name}')
 
                 # Get num of vertecies in elements
