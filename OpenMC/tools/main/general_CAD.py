@@ -60,16 +60,16 @@ with open(settings_path) as f:
 
 tmp_material_array = []
 # Temp for testing
-# for material in materials_input:
-#     tmp_material = openmc.Material(name = material[0])
-#     tmp_material.add_element('Fe', 1, 'ao')
-#     tmp_material.set_density("g/cm3", 7.7)
-#     tmp_material_array.append(tmp_material)
 for material in materials_input:
     tmp_material = openmc.Material(name = material[0])
-    tmp_material.add_element(material[1], 1, "ao")
-    tmp_material.set_density("g/cm3", float(material[2]))
+    tmp_material.add_element('Fe', 1, 'ao')
+    tmp_material.set_density("g/cm3", 7.7)
     tmp_material_array.append(tmp_material)
+# for material in materials_input:
+#     tmp_material = openmc.Material(name = material[0])
+#     tmp_material.add_element(material[1], 1, "ao")
+#     tmp_material.set_density("g/cm3", float(material[2]))
+#     tmp_material_array.append(tmp_material)
 
 materials = openmc.Materials(tmp_material_array)
 materials.export_to_xml()

@@ -216,11 +216,12 @@ class Window(ui.Window):
 
         with open(f"{paths['output_omni']}{paths['sep']}settings.txt", 'w') as file:
             # Materials
-            # count = 0     # DEBUGGING
+            file.write('MATERIALS\n')
+            count = 0     # DEBUGGING
             for mat in self.settings_dict['materials']:
-                # count += 1
-                # file.write(f"mesh_{count} Fe 7.7\n")
-                file.write(f"{mat[0].replace(' ', '')[:-1]} {mat[1].get_value_as_string()} {mat[2].get_value_as_float()}\n")
+                count += 1
+                file.write(f"mesh_{count} Fe 7.7\n")
+                # file.write(f"{mat[0].replace(' ', '')[:-1]} {mat[1].get_value_as_string()} {mat[2].get_value_as_float()}\n")
             # Sources
             file.write('SOURCES\n')
             for src in self.settings_dict['sources']:
