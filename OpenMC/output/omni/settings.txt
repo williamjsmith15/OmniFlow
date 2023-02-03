@@ -3,12 +3,17 @@ Bronze ebwfb 561651.0
 Brass ggen 651651.0
 SOURCES
 12.0 1770.0 8505.0 -2788.0
+14.0 0.0 0.0 0.0
+0.0 0.0 0.0 0.0
+0.0 0.0 0.0 0.0
+0.0 0.0 0.0 0.0
 SETTINGS
 batches 12
 particles 1000
 run_mode fixed source
 EXT_SETTINGS
-num_sources 1
+source_type Point Source
+num_sources 5
 test_dropdown True
 mats_dropdown True
 sets_dropdown False
