@@ -6,6 +6,7 @@
 import openmc
 import os
 import math
+import openmc_plasma_source as ops
 
 # Find the settings file
 sep = os.sep
@@ -31,6 +32,7 @@ for root, dirs, files in os.walk(cwl_folder):
 materials_input = []
 sources_input = []
 settings_input = []
+ex_settings = []
 position = 0
 with open(settings_path) as f:
     for line in f:
@@ -52,6 +54,8 @@ with open(settings_path) as f:
                 position = 4
             else:
                 settings_input.append(line.split())
+        elif position == 4:
+            ex_settings.append(line.split())
         
 
 ##################
@@ -117,16 +121,37 @@ geometry.export_to_xml()
 
 settings = openmc.Settings()
 
+source_type_point = True
+
+for ex_setting in ex_settings:
+    try:
+        if ex_setting[0] == "source_type":
+            if ex_setting[1] == "Point":
+                source_type_point = True
+            elif ex_setting[1] == "Plasma":
+                source_type_point = False
+            else:
+                print(f"Don't know what to do with source type {ex_setting[1]} {ex_setting[2]}")
+        else:
+            print(f"Don't know what to do with {ex_setting}")
+    except:
+        print(f"Ran into an error with {ex_setting}")
+
 # Sources
-sources = []
-for source in sources_input:
-    source_pnt = openmc.stats.Point(xyz=(float(source[1]), float(source[2]), float(source[3])))
-    source = openmc.Source(space=source_pnt, energy=openmc.stats.Discrete(x=[float(source[0]),], p=[1.0,]))
-    sources.append(source)
-source_str = 1.0 / len(sources)
-for source in sources:
-    source.strength = source_str
+if source_type_point: # If a point source
+    sources = []
+    for source in sources_input:
+        source_pnt = openmc.stats.Point(xyz=(float(source[1]), float(source[2]), float(source[3])))
+        source = openmc.Source(space=source_pnt, energy=openmc.stats.Discrete(x=[float(source[0]),], p=[1.0,]))
+        sources.append(source)
+    source_str = 1.0 / len(sources)
+    for source in sources:
+        source.strength = source_str
+else: # If a plasma source
+    sources = ops.FusionRingSource() # TODO: need to sort this out
+
 settings.source = sources
+
 
 # Settings
 for setting in settings_input:
