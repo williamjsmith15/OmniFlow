@@ -138,15 +138,13 @@ class Window(ui.Window):
 
                 with ui.HStack():
                     ui.Label("Run Mode", width=self.label_width)
-                    self.settings_dict['run_mode'] = MinimalModel(items=self.run_type_options)
+                    self.settings_dict['run_mode'] = MinimalModel(items=self.run_type_options, value=int(np.where(self.run_type_options == self.previous_settings['run_mode'])[0]))
                     ui.ComboBox(self.settings_dict['run_mode'])
-                    self.settings_dict['run_mode'].set_model_state(value=int(np.where(self.run_type_options == self.previous_settings['run_mode'])[0]))
 
                 with ui.HStack():
                     ui.Label("Sources", width=self.label_width)
-                    self.settings_dict['source_type'] = MinimalModel(items=self.source_type_options)
+                    self.settings_dict['source_type'] = MinimalModel(items=self.source_type_options, value=int(np.where(self.source_type_options==str(self.previous_settings['source_type']))[0]))
                     ui.ComboBox(self.settings_dict['source_type'])
-                    self.settings_dict['source_type'].set_model_state(value=int(np.where(self.source_type_options==str(self.previous_settings['source_type']))[0]))
                     ui.Button("Enter", clicked_fn=lambda: self._save_state_button())
                 
                 if self.settings_dict['source_type'].get_item_value_model(None, 1).get_value_as_int() == 0: # Point source case

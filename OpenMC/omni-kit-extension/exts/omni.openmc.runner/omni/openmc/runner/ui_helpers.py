@@ -9,7 +9,7 @@ class MinimalItem(ui.AbstractItem):
         self.model = ui.SimpleStringModel(text)
 
 class MinimalModel(ui.AbstractItemModel):
-    def __init__(self, items):
+    def __init__(self, items, value=0):
         # Items is a 1D array of strings that are the options for the dropdown
         super().__init__()
 
@@ -21,6 +21,8 @@ class MinimalModel(ui.AbstractItemModel):
             MinimalItem(text)
             for text in items
         ]
+
+        self._current_index.set_value(value)
     
     def get_item_children(self, item):
         return self._items
