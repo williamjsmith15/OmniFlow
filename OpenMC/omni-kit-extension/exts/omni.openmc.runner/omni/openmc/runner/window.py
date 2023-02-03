@@ -8,44 +8,30 @@ import os
 LABEL_WIDTH = 80
 SPACING = 4
 
+default_dict = {
+    'sources'       : [],
+    'materials'     : [],
 
+    # Run settings
+    'batches'       : 0,
+    'particles'     : 0,
+    'run_mode'      : 'fixed source',
+
+    # All system / extension settings
+    'num_sources'   : 1,
+    'source_type'   : 'point',
+    'test_dropdown' : False,
+    'mats_dropdown' : False,
+    'sets_dropdown' : True,
+    'srcs_dropdown' : False
+}
 class Window(ui.Window):
     """The class that represents the window"""
 
     # Create dict to store variables
-    settings_dict = {
-        'sources'       : [],
-        'materials'     : [],
+    settings_dict = default_dict
 
-        # Run settings
-        'batches'       : 0,
-        'particles'     : 0,
-        'run_mode'      : 'fixed source',
-
-        # All system / extension settings
-        'num_sources'   : 1,
-        'test_dropdown' : False,
-        'mats_dropdown' : False,
-        'sets_dropdown' : True,
-        'srcs_dropdown' : False
-    }
-
-    previous_settings = {
-        'sources'       : [],
-        'materials'     : [],
-
-        # Run settings
-        'batches'       : 0,
-        'particles'     : 0,
-        'run_mode'      : 'fixed source',
-
-        # All system / extension settings
-        'num_sources'   : 1,
-        'test_dropdown' : False,
-        'mats_dropdown' : False,
-        'sets_dropdown' : True,
-        'srcs_dropdown' : False
-    }
+    previous_settings = default_dict
 
     def __init__(self, title: str, delegate=None, **kwargs):
         self.__label_width = LABEL_WIDTH
@@ -82,7 +68,7 @@ class Window(ui.Window):
             ui.Button("Run Workflow", clicked_fn=lambda: self._run_workflow_button())
             ui.Button("Save State", clicked_fn=lambda: self._save_state_button())
 
-            self.settings_dict['test_dropdown'] = ui.CollapsableFrame("Test", collapsed = self.t_f(self.previous_settings['test_dropdown']))
+            self.settings_dict['test_dropdown'] = ui.CollapsableFrame("Test", collapsed = t_f(self.previous_settings['test_dropdown']))
             with self.settings_dict['test_dropdown']:
 
                 with ui.HStack():
@@ -100,7 +86,7 @@ class Window(ui.Window):
                     materials.append(line)
 
         # Build the widgets of the Materials
-        self.settings_dict['mats_dropdown'] = ui.CollapsableFrame("Materials", collapsed = self.t_f(self.previous_settings['mats_dropdown']))
+        self.settings_dict['mats_dropdown'] = ui.CollapsableFrame("Materials", collapsed = t_f(self.previous_settings['mats_dropdown']))
         with self.settings_dict['mats_dropdown']:
 
             with ui.VStack(height=0, spacing=SPACING):
@@ -130,7 +116,7 @@ class Window(ui.Window):
 
     def _build_settings(self):
         # Build the widgets of the Settings group
-        self.settings_dict['sets_dropdown'] = ui.CollapsableFrame("Settings", collapsed = self.t_f(self.previous_settings['sets_dropdown']))
+        self.settings_dict['sets_dropdown'] = ui.CollapsableFrame("Settings", collapsed = t_f(self.previous_settings['sets_dropdown']))
 
         with self.settings_dict['sets_dropdown']:
 
@@ -157,7 +143,13 @@ class Window(ui.Window):
                     self.settings_dict['num_sources'].set_value(int(self.previous_settings['num_sources']))
                     ui.Button("Enter", clicked_fn=lambda: self._save_state_button())
 
-                self.settings_dict['srcs_dropdown'] = ui.CollapsableFrame("Sources", collapsed = self.t_f(self.previous_settings['srcs_dropdown']))
+                with ui.HStack():
+                    ui.Label("Sources", width=self.label_width)
+                    self.settings_dict['num_sources'] = ui.IntField().model
+                    self.settings_dict['num_sources'].set_value(int(self.previous_settings['num_sources']))
+                    ui.Button("Enter", clicked_fn=lambda: self._save_state_button())
+
+                self.settings_dict['srcs_dropdown'] = ui.CollapsableFrame("Sources", collapsed = t_f(self.previous_settings['srcs_dropdown']))
                 with self.settings_dict['srcs_dropdown']:
 
                     with ui.VStack(height=0, spacing=SPACING):
@@ -302,12 +294,5 @@ class Window(ui.Window):
                         self.previous_settings[split_line[0]] = ' '.join(split_line[1:])
                 elif position == 4:
                     self.previous_settings[split_line[0]] = ' '.join(split_line[1:])
-
-    def t_f(self, string):
-        if string == 'True':
-            return True
-        elif string == 'False':
-            return False
-        else:
-            print('I dont know what this is, returning default of false')
-            return False
+                else:
+                    print(f'I dont know what position {position} is')

@@ -161,3 +161,14 @@ def export_stage():
     stage = omni.usd.get_context().get_stage()
     stage.Export(f"{paths['output_omni']}/dagmc.usd")
     print("Successfully exported USD stage!")
+
+
+def t_f(string):
+    # Quick helper function to convert string to bool
+    if string == 'True':
+        return True
+    elif string == 'False':
+        return False
+    else:
+        print('I dont know what this is, returning default of false')
+        return False

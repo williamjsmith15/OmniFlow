@@ -4,12 +4,12 @@ Brass ggen 651651.0
 SOURCES
 12.0 1770.0 8505.0 -2788.0
 SETTINGS
-batches 1
+batches 12
 particles 1000
 run_mode fixed source
 EXT_SETTINGS
 num_sources 1
 test_dropdown True
-mats_dropdown False
+mats_dropdown True
 sets_dropdown False
 srcs_dropdown False
