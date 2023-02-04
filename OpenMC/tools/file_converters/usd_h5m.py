@@ -2,7 +2,14 @@ from typing import Iterable
 from pxr import Usd, UsdShade
 from vertices_to_h5m import vertices_to_h5m
 import numpy as np
-import os
+import os, tempfile
+
+sep = os.sep    # System separator
+ext_path = os.path.realpath(__file__)   # File path of ext
+parent_folder = ext_path.split(f"{sep}omni-kit", 1)[0]  # File path of parent folder to extension
+tmp       = tempfile.gettempdir()
+path_py = os.path.realpath(__file__)
+
 
 # Name of file changeable for ease of testing... default should be 'dagmc.usd'
 fname_root = 'dagmc' # Default
@@ -53,11 +60,11 @@ def propertyIsValid (primative, parameterName):
 
 def get_rot(rotation):
     # Calculates rotation matrix given a x,y,z rotation in degrees
-    factor = 2 * np.pi / 360   # Convert to radians
+    factor = 2.0 * np.pi / 360.0   # Convert to radians
     x_angle, y_angle, z_angle = rotation[0]*factor, rotation[1]*factor, rotation[2]*factor
-    x_rot = np.array([[1,0,0],[0,np.cos(x_angle),-np.sin(x_angle)],[0,np.sin(x_angle),np.cos(x_angle)]])
-    y_rot = np.array([[np.cos(y_angle),0,np.sin(y_angle)],[0,1,0],[-np.sin(y_angle),0,np.cos(y_angle)]])
-    z_rot = np.array([[np.cos(z_angle),-np.sin(z_angle),0],[np.sin(z_angle),np.cos(z_angle),0],[0,0,1]])
+    x_rot = np.array([[1,0,0],[0,np.cos(x_angle),-np.sin(x_angle)],[0,np.sin(x_angle),np.cos(x_angle)]], dtype='float64')
+    y_rot = np.array([[np.cos(y_angle),0,np.sin(y_angle)],[0,1,0],[-np.sin(y_angle),0,np.cos(y_angle)]], dtype='float64')
+    z_rot = np.array([[np.cos(z_angle),-np.sin(z_angle),0],[np.sin(z_angle),np.cos(z_angle),0],[0,0,1]], dtype='float64')
     rot_mat = np.dot(np.dot(x_rot,y_rot),z_rot)
     return rot_mat
 
@@ -268,6 +275,24 @@ class USDtoDAGMC:
 
         material_count = 0 # For materials that 'fall through the net'
 
+        # Change as NVIDIA is annoying with its choice of up axis (they choose Y whereas it should be Z for OpenMC...)
+        # Find parent folder path
+        if "PhD" in path_py:
+            cwl_folder = path_py.split(f"{sep}PhD", 1)[0]
+        elif "cwl" in path_py:
+            cwl_folder = path_py.split(f"{sep}cwl", 1)[0]
+
+        # Find settings and dagmc files
+        for root, dirs, files in os.walk(cwl_folder):
+            for file in files:
+                if file.endswith("settings.txt"):
+                    settings_path = os.path.join(root, file)
+
+        with open(settings_path, 'r') as file:
+            for line in file:
+                if "up_axis" in line:
+                    up_axis = line.split()[1]
+
         for primID, x in enumerate(stage.Traverse()):
             primType = x.GetTypeName()
             print(f"PRIM: {str(primType)}")
@@ -292,10 +317,21 @@ class USDtoDAGMC:
                 allVertexIndices = np.array(getValidProperty(x,"faceVertexIndices"))
 
                 # Get if there is rotation or translation of the meshes
-                rotation = [0,0,0] if not propertyIsValid(x,"xformOp:rotateXYZ") else list(getProperty(x,"xformOp:rotateXYZ"))
+                rotation = [0.0,0.0,0.0] if not propertyIsValid(x,"xformOp:rotateXYZ") else list(getProperty(x,"xformOp:rotateXYZ"))
                 translation = np.array([0,0,0]) if not propertyIsValid(x,"xformOp:translate") else np.array(list(getProperty(x,"xformOp:translate")))
                 print(f'Rotation is {rotation}')
                 print(f'Translation is {translation}')
+
+                # Handling for changing the up axis
+                if up_axis == 'X':
+                    rotation[1] -= 90.0 # TODO: Check this is correct...
+                elif up_axis == 'Y':
+                    rotation[0] += 90.0
+                elif up_axis == 'Z':
+                    rotation = rotation
+                else:
+                    print('Something went wrong with up_axis')
+
 
                 rot_matrix = get_rot(rotation)
                 
@@ -362,6 +398,7 @@ class USDtoDAGMC:
                 print(f"I don't know what to do with a {str(primType)} yet...")
             
             print("\n\n")
+
 
     def save_to_h5m(self, filename: str = fname_root + '.h5m'):
         '''

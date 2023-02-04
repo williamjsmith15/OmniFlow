@@ -21,6 +21,7 @@ steps:
         in:
             usd_h5m_script: usd_h5m_script
             usd_CAD: usd_CAD
+            settings: settings
         out:
             [dagmc_CAD]
     openmc:

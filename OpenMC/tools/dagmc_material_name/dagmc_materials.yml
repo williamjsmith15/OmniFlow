@@ -7,3 +7,6 @@ extract_script:
 usd_h5m_script:
   class: File
   path: ../file_converters/usd_h5m.py
+settings:
+  class: File
+  path: ../../output/omni/settings.txt

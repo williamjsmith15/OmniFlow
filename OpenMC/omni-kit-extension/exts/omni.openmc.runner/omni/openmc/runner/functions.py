@@ -89,7 +89,6 @@ def toy_test():
         print('Running Workflow in Container') 
         var = toilContainer.exec_run(
             ["cwltool",
-            "--no-match-user",
             "--outdir", f"{paths['output_container']}/toy",
             "/tests/toy/openmc_tool_toy.cwl",
             "/tests/toy/script_loc_toy.yml"]
@@ -105,8 +104,8 @@ def toy_test():
             fname = 'toy_output'
         )
     else:
-        print(f"cwltool --outdir {paths['output_test']} --no-match-user {paths['workflow']}{sep}tests{sep}toy{sep}openmc_tool_toy.cwl {paths['workflow']}{sep}tests{sep}toy{sep}script_loc_toy.yml")
-        os.system(f"cwltool --outdir {paths['output_test']} --no-match-user {paths['workflow']}{sep}tests{sep}toy{sep}openmc_tool_toy.cwl {paths['workflow']}{sep}tests{sep}toy{sep}script_loc_toy.yml")
+        print(f"cwltool --outdir {paths['output_test']} {paths['workflow']}{sep}tests{sep}toy{sep}openmc_tool_toy.cwl {paths['workflow']}{sep}tests{sep}toy{sep}script_loc_toy.yml")
+        os.system(f"cwltool --outdir {paths['output_test']} {paths['workflow']}{sep}tests{sep}toy{sep}openmc_tool_toy.cwl {paths['workflow']}{sep}tests{sep}toy{sep}script_loc_toy.yml")
 
     print(f"Toy Test Complete! Your files will be in: {paths['output_test']}")
 
@@ -114,9 +113,9 @@ def simple_CAD_test():
     #Test Simple CAD
     print("Running Simple CAD Test Workflow")
 
-    print(f"cwltool --outdir {paths['output_test']} --no-match-user {paths['workflow']}{sep}tests{sep}simple{sep}simple_CAD_workflow.cwl {paths['workflow']}{sep}tests{sep}simple{sep}script_loc_simple_CAD.yml")
+    print(f"cwltool --outdir {paths['output_test']} {paths['workflow']}{sep}tests{sep}simple{sep}simple_CAD_workflow.cwl {paths['workflow']}{sep}tests{sep}simple{sep}script_loc_simple_CAD.yml")
         
-    os.system(f"cwltool --outdir {paths['output_test']} --no-match-user {paths['workflow']}{sep}tests{sep}simple{sep}simple_CAD_workflow.cwl {paths['workflow']}{sep}tests{sep}simple{sep}script_loc_simple_CAD.yml")
+    os.system(f"cwltool --outdir {paths['output_test']} {paths['workflow']}{sep}tests{sep}simple{sep}simple_CAD_workflow.cwl {paths['workflow']}{sep}tests{sep}simple{sep}script_loc_simple_CAD.yml")
 
     print(f"Simple CAD Test Complete! Your files will be in: {paths['output_test']}")
     
@@ -128,8 +127,8 @@ def run_workflow():
     export_stage()
 
     print("Running Workflow")
-    print(f"cwltool --outdir {paths['output_sim']} --no-match-user {paths['workflow']}{sep}main{sep}openmc_workflow.cwl {paths['workflow']}{sep}main{sep}script_loc.yml")
-    os.system(f"cwltool --outdir {paths['output_sim']} --no-match-user {paths['workflow']}{sep}main{sep}openmc_workflow.cwl {paths['workflow']}{sep}main{sep}script_loc.yml")
+    print(f"cwltool --outdir {paths['output_sim']} {paths['workflow']}{sep}main{sep}openmc_workflow.cwl {paths['workflow']}{sep}main{sep}script_loc.yml")
+    os.system(f"cwltool --outdir {paths['output_sim']} {paths['workflow']}{sep}main{sep}openmc_workflow.cwl {paths['workflow']}{sep}main{sep}script_loc.yml")
 
     print(f"Done! Your files will be in: {paths['output_sim']}")
 
@@ -142,8 +141,8 @@ def get_materials():
     export_stage()
 
     print('Running materials getter')
-    print(f"cwltool --outdir {paths['output_omni']} --no-match-user {paths['workflow']}{sep}dagmc_material_name{sep}dagmc_materials.cwl {paths['workflow']}{sep}dagmc_material_name{sep}dagmc_materials.yml")
-    os.system(f"cwltool --outdir {paths['output_omni']} --no-match-user {paths['workflow']}{sep}dagmc_material_name{sep}dagmc_materials.cwl {paths['workflow']}{sep}dagmc_material_name{sep}dagmc_materials.yml")
+    print(f"cwltool --outdir {paths['output_omni']} {paths['workflow']}{sep}dagmc_material_name{sep}dagmc_materials.cwl {paths['workflow']}{sep}dagmc_material_name{sep}dagmc_materials.yml")
+    os.system(f"cwltool --outdir {paths['output_omni']} {paths['workflow']}{sep}dagmc_material_name{sep}dagmc_materials.cwl {paths['workflow']}{sep}dagmc_material_name{sep}dagmc_materials.yml")
 
     mat_file_path = f"{paths['output_omni']}{paths['sep']}materials.txt"
     materials = []

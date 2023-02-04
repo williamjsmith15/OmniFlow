@@ -1,14 +1,15 @@
 MATERIALS
-Asphalt Fe 7.699999809265137
+Iron Fe 7.699999809265137
 SOURCES
-50.000000 DT 0.000000 360.000000 20000.000000
+3723.000000 DT 0.000000 360.000000 20000.000000 9731.000000
 SETTINGS
 batches 10
-particles 100
+particles 1000
 run_mode fixed source
 EXT_SETTINGS
 source_type Fusion Ring Source
 num_sources 1
+up_axis Y
 test_dropdown True
 mats_dropdown False
 sets_dropdown False

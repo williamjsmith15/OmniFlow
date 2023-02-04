@@ -20,7 +20,8 @@ default_dict = {
 
     # All system / extension settings
     'num_sources'   : 1,
-    'source_type'   : 0, # 0=point, 1=plasma
+    'source_type'   : 'Point Source', # 0=point, 1=plasma
+    'up_axis'       : 'Z', # 0=X 1=Y 2=Z
     'test_dropdown' : False,
     'mats_dropdown' : False,
     'sets_dropdown' : True,
@@ -36,6 +37,7 @@ class Window(ui.Window):
     # Options for dropdowns
     run_type_options = np.array(['fixed source','eigenvalue','volume','plot','particle restart'])
     source_type_options = np.array(['Point Source', 'Fusion Point Source', 'Fusion Ring Source', 'Tokamak Source'])
+    up_axis_choice = np.array(['X','Y','Z'])
 
     def __init__(self, title: str, delegate=None, **kwargs):
         self.__label_width = LABEL_WIDTH
@@ -167,13 +169,12 @@ class Window(ui.Window):
                 elif self.settings_dict['source_type'].get_item_value_model(None, 1).get_value_as_int() == 2: 
                     self.settings_dict['sources'] = []
                     for i in range(int(self.previous_settings['num_sources'])):
-                        self.settings_dict['sources'].append([None]*5)
+                        self.settings_dict['sources'].append([None]*6)
                         with ui.HStack(spacing=SPACING):
                             ui.Label(f"Source {i+1}", width=self.label_width)
                             ui.Label("Radius (inside, cm)", width=self.label_width)
                             self.settings_dict['sources'][i][0] = ui.FloatField().model
-                            ui.Label("Fuel Type (DT, DD)")
-                            self.settings_dict['sources'][i][1] = ui.StringField().model
+                            
 
                         with ui.HStack(spacing=SPACING):
                             ui.Label("Angle (deg) start:", width=self.label_width)
@@ -183,12 +184,19 @@ class Window(ui.Window):
                             ui.Label("Temp (eV)")
                             self.settings_dict['sources'][i][4] = ui.FloatField().model
 
+                        with ui.HStack(spacing=SPACING):
+                            ui.Label("Fuel Type (DT, DD)")
+                            self.settings_dict['sources'][i][1] = ui.StringField().model
+                            ui.Label("Vert Offset")
+                            self.settings_dict['sources'][i][5] = ui.FloatField().model
+
                         try:
                             self.settings_dict['sources'][i][0].set_value(float(self.previous_settings['sources'][i][0]))
                             self.settings_dict['sources'][i][1].set_value(str(self.previous_settings['sources'][i][1]))
                             self.settings_dict['sources'][i][2].set_value(float(self.previous_settings['sources'][i][2]))
                             self.settings_dict['sources'][i][3].set_value(float(self.previous_settings['sources'][i][3]))
                             self.settings_dict['sources'][i][4].set_value(float(self.previous_settings['sources'][i][4]))
+                            self.settings_dict['sources'][i][5].set_value(float(self.previous_settings['sources'][i][5]))
                         except: # Handling of sources that don't have data
                             print(f"No source data found for source {i+1}")
 
@@ -224,6 +232,11 @@ class Window(ui.Window):
                     ui.Label("Run Mode", width=self.label_width)
                     self.settings_dict['run_mode'] = MinimalModel(items=self.run_type_options, value=int(np.where(self.run_type_options == self.previous_settings['run_mode'])[0]))
                     ui.ComboBox(self.settings_dict['run_mode'])
+
+                with ui.HStack():
+                    ui.Label("Up Axis", width=self.label_width)
+                    self.settings_dict['up_axis'] = MinimalModel(items=self.up_axis_choice, value=int(np.where(self.up_axis_choice == self.previous_settings['up_axis'])[0]))
+                    ui.ComboBox(self.settings_dict['up_axis'])
 
 
     def _build_export(self):
@@ -269,6 +282,8 @@ class Window(ui.Window):
     # Converts settings and materials into a txt file for the general CAD py script to use
         print("Saving Materials and Settings")
 
+        already_used_materials = []
+
         if get_mats:
             materials = get_materials()
 
@@ -278,12 +293,19 @@ class Window(ui.Window):
             # count = 0     # DEBUGGING
             if get_mats: # Just write the materials to the settings file, no element or density
                 for mat in materials:
-                    file.write(f"{mat}")
+                    if mat in already_used_materials:
+                        pass
+                    else:
+                        file.write(f"{mat}")
+                        already_used_materials.append(mat)
             else:        # Write the material settings set in omni
                 for mat in self.settings_dict['materials']:
                     # count += 1
                     # file.write(f"mesh_{count} Fe 7.7\n")
-                    file.write(f"{mat[0].replace(' ', '')} {mat[1].get_value_as_string()} {mat[2].get_value_as_float()}\n")
+                    if 'Irangon' in mat[0]:
+                        file.write(f"{mat[0].replace(' ', '')} Fe 7.7\n")
+                    else:
+                        file.write(f"{mat[0].replace(' ', '')} {mat[1].get_value_as_string()} {mat[2].get_value_as_float()}\n")
             
             # Sources
             file.write('SOURCES\n')
@@ -300,7 +322,7 @@ class Window(ui.Window):
                         pass
                     tmp_src.append(str(tmp_field))
                 file.write(f"{' '.join(tmp_src)}\n")
-                
+
             # Settings 
             file.write('SETTINGS\n')
             file.write(f"batches {self.settings_dict['batches'].get_value_as_int()}\n")
@@ -310,6 +332,7 @@ class Window(ui.Window):
             file.write('EXT_SETTINGS\n')
             file.write(f"source_type {self.source_type_options[self.settings_dict['source_type'].get_item_value_model(None, 1).get_value_as_int()]}\n")
             file.write(f"num_sources {self.settings_dict['num_sources'].get_value_as_int()}\n")
+            file.write(f"up_axis {self.up_axis_choice[self.settings_dict['up_axis'].get_item_value_model(None, 1).get_value_as_int()]}\n")
             file.write(f"test_dropdown {self.settings_dict['test_dropdown'].collapsed}\n")
             file.write(f"mats_dropdown {self.settings_dict['mats_dropdown'].collapsed}\n")
             file.write(f"sets_dropdown {self.settings_dict['sets_dropdown'].collapsed}\n")

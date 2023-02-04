@@ -89,7 +89,7 @@ dagmc_univ = openmc.DAGMCUniverse(filename=geometry_path)
 # geometry.export_to_xml()
 
 # creates an edge of universe boundary surface
-vac_surf = openmc.Sphere(r=10000, surface_id=9999, boundary_type="vacuum")
+vac_surf = openmc.Sphere(r=100000, surface_id=9999, boundary_type="vacuum")
 # adds reflective surface for the sector model at 0 degrees
 reflective_1 = openmc.Plane(
     a=math.sin(0),
@@ -153,7 +153,8 @@ elif source_type == 'Fusion Ring Source':
             angles =        (float(source[2])*angle_conversion, float(source[3])*angle_conversion),
             radius =        float(source[0]),
             temperature =   float(source[4]),
-            fuel =          str(source[1])
+            fuel =          str(source[1]),
+            z_placement =   float(source[5])
         )
         sources.append(source_single)
 elif source_type == 'Tokamak Source':
