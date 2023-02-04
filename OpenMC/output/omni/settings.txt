@@ -1,20 +1,17 @@
 MATERIALS
-Bronze ebwfb 561651.0
-Brass ggen 651651.0
+    Adobe_Brick
+    Aluminum_Cast
 SOURCES
-12.0 1770.0 8505.0 -2788.0
-14.0 0.0 0.0 0.0
-0.0 0.0 0.0 0.0
-0.0 0.0 0.0 0.0
-0.0 0.0 0.0 0.0
+14.000000 DT 23.000000 0.041000 13.000000
+0.000000 0.000000 0.000000 0.000000 0.000000
 SETTINGS
 batches 12
 particles 1000
 run_mode fixed source
 EXT_SETTINGS
-source_type Point Source
-num_sources 5
+source_type Fusion Ring Source
+num_sources 2
 test_dropdown True
-mats_dropdown True
+mats_dropdown False
 sets_dropdown False
 srcs_dropdown False

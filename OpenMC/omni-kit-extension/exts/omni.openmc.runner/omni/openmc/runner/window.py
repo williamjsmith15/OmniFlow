@@ -6,7 +6,7 @@ from .ui_helpers import *
 import numpy as np
 import os
 
-LABEL_WIDTH = 80
+LABEL_WIDTH = 120
 SPACING = 4
 
 default_dict = {
@@ -35,7 +35,7 @@ class Window(ui.Window):
 
     # Options for dropdowns
     run_type_options = np.array(['fixed source','eigenvalue','volume','plot','particle restart'])
-    source_type_options = np.array(['Point Source', 'Plasma Source'])
+    source_type_options = np.array(['Point Source', 'Fusion Point Source', 'Fusion Ring Source', 'Tokamak Source'])
 
     def __init__(self, title: str, delegate=None, **kwargs):
         self.__label_width = LABEL_WIDTH
@@ -116,6 +116,90 @@ class Window(ui.Window):
                         self.settings_dict['materials'][i][2] = ui.FloatField().model
                         self.settings_dict['materials'][i][2].set_value(str(self.previous_settings['materials'][i][2]))
 
+    def _build_sources(self):
+        self.settings_dict['srcs_dropdown'] = ui.CollapsableFrame("Sources", collapsed = t_f(self.previous_settings['srcs_dropdown']))
+        with self.settings_dict['srcs_dropdown']:
+            with ui.VStack(height=0, spacing=SPACING):
+
+                with ui.HStack():
+                    ui.Label("Source Type", width=self.label_width)
+                    self.settings_dict['source_type'] = MinimalModel(items=self.source_type_options, value=int(np.where(self.source_type_options==str(self.previous_settings['source_type']))[0]))
+                    ui.ComboBox(self.settings_dict['source_type'])
+                    ui.Button("Enter", clicked_fn=lambda: self._save_state_button())
+
+                with ui.HStack():
+                    ui.Label("Number of Sources", width=self.label_width)
+                    self.settings_dict['num_sources'] = ui.IntField().model
+                    self.settings_dict['num_sources'].set_value(int(self.previous_settings['num_sources']))
+                    ui.Button("Enter", clicked_fn=lambda: self._save_state_button())
+
+                # Point source case
+                if self.settings_dict['source_type'].get_item_value_model(None, 1).get_value_as_int() == 0: 
+                    self.settings_dict['sources'] = []
+                    for i in range(int(self.previous_settings['num_sources'])):
+                        self.settings_dict['sources'].append([None]*4)
+                        
+                        with ui.VStack(height=0, spacing=SPACING):
+                            with ui.HStack(spacing=SPACING):
+
+                                ui.Label(f"Source {i+1}", width=self.label_width)
+                                ui.Label("Energy:", width=self.label_width)
+                                self.settings_dict['sources'][i][0] = ui.FloatField().model
+                                ui.Label("Location:", width=self.label_width)
+                                self.settings_dict['sources'][i][1] = ui.FloatField().model
+                                self.settings_dict['sources'][i][2] = ui.FloatField().model
+                                self.settings_dict['sources'][i][3] = ui.FloatField().model
+                                
+                                try:
+                                    self.settings_dict['sources'][i][0].set_value(float(self.previous_settings['sources'][i][0]))
+                                    self.settings_dict['sources'][i][1].set_value(float(self.previous_settings['sources'][i][1]))
+                                    self.settings_dict['sources'][i][2].set_value(float(self.previous_settings['sources'][i][2]))
+                                    self.settings_dict['sources'][i][3].set_value(float(self.previous_settings['sources'][i][3]))
+                                except: # Handling of sources that don't have data
+                                    print(f"No source data found for source {i+1}")
+
+                # Fusion Point Source Case
+                elif self.settings_dict['source_type'].get_item_value_model(None, 1).get_value_as_int() == 1: 
+                    with ui.HStack():
+                        ui.Label("Fusion Point Source not yet implemented....", width=self.label_width)
+                
+                # Fusion Ring Source Case
+                elif self.settings_dict['source_type'].get_item_value_model(None, 1).get_value_as_int() == 2: 
+                    self.settings_dict['sources'] = []
+                    for i in range(int(self.previous_settings['num_sources'])):
+                        self.settings_dict['sources'].append([None]*5)
+                        with ui.HStack(spacing=SPACING):
+                            ui.Label(f"Source {i+1}", width=self.label_width)
+                            ui.Label("Radius (inside, cm)", width=self.label_width)
+                            self.settings_dict['sources'][i][0] = ui.FloatField().model
+                            ui.Label("Fuel Type (DT, DD)")
+                            self.settings_dict['sources'][i][1] = ui.StringField().model
+
+                        with ui.HStack(spacing=SPACING):
+                            ui.Label("Angle (deg) start:", width=self.label_width)
+                            self.settings_dict['sources'][i][2] = ui.FloatField().model
+                            ui.Label("end:")
+                            self.settings_dict['sources'][i][3] = ui.FloatField().model
+                            ui.Label("Temp (eV)")
+                            self.settings_dict['sources'][i][4] = ui.FloatField().model
+
+                        try:
+                            self.settings_dict['sources'][i][0].set_value(float(self.previous_settings['sources'][i][0]))
+                            self.settings_dict['sources'][i][1].set_value(str(self.previous_settings['sources'][i][1]))
+                            self.settings_dict['sources'][i][2].set_value(float(self.previous_settings['sources'][i][2]))
+                            self.settings_dict['sources'][i][3].set_value(float(self.previous_settings['sources'][i][3]))
+                            self.settings_dict['sources'][i][4].set_value(float(self.previous_settings['sources'][i][4]))
+                        except: # Handling of sources that don't have data
+                            print(f"No source data found for source {i+1}")
+
+
+                # Tokamak Source Case
+                elif self.settings_dict['source_type'].get_item_value_model(None, 1).get_value_as_int() == 3: 
+                    with ui.HStack():
+                        ui.Label("Tokamak Source not yet implemented....", width=self.label_width)
+                        
+                else:
+                    print('There was an error, unknown source type detected')
 
 
     def _build_settings(self):
@@ -141,59 +225,6 @@ class Window(ui.Window):
                     self.settings_dict['run_mode'] = MinimalModel(items=self.run_type_options, value=int(np.where(self.run_type_options == self.previous_settings['run_mode'])[0]))
                     ui.ComboBox(self.settings_dict['run_mode'])
 
-                with ui.HStack():
-                    ui.Label("Sources", width=self.label_width)
-                    self.settings_dict['source_type'] = MinimalModel(items=self.source_type_options, value=int(np.where(self.source_type_options==str(self.previous_settings['source_type']))[0]))
-                    ui.ComboBox(self.settings_dict['source_type'])
-                    ui.Button("Enter", clicked_fn=lambda: self._save_state_button())
-                
-                if self.settings_dict['source_type'].get_item_value_model(None, 1).get_value_as_int() == 0: # Point source case
-
-                    with ui.HStack():
-                        ui.Label("Sources", width=self.label_width)
-                        self.settings_dict['num_sources'] = ui.IntField().model
-                        self.settings_dict['num_sources'].set_value(int(self.previous_settings['num_sources']))
-                        ui.Button("Enter", clicked_fn=lambda: self._save_state_button())
-
-                    self.settings_dict['srcs_dropdown'] = ui.CollapsableFrame("Sources", collapsed = t_f(self.previous_settings['srcs_dropdown']))
-                    with self.settings_dict['srcs_dropdown']:
-
-                        with ui.VStack(height=0, spacing=SPACING):
-                            self.settings_dict['sources'] = []
-                            for i in range(int(self.previous_settings['num_sources'])):
-                                self.settings_dict['sources'].append([None]*4)
-                                
-                                with ui.VStack(height=0, spacing=SPACING):
-                                    if i < len(self.previous_settings['sources']):
-                                        with ui.HStack(spacing=SPACING):
-                                            ui.Label(f"Source {i+1}", width=self.label_width)
-                                            ui.Label("Energy:", width=self.label_width)
-                                            self.settings_dict['sources'][i][0] = ui.FloatField().model
-                                            self.settings_dict['sources'][i][0].set_value(float(self.previous_settings['sources'][i][0]))
-
-                                            ui.Label("Location:", width=self.label_width)
-                                            self.settings_dict['sources'][i][1] = ui.FloatField().model
-                                            self.settings_dict['sources'][i][1].set_value(float(self.previous_settings['sources'][i][1]))
-                                            self.settings_dict['sources'][i][2] = ui.FloatField().model
-                                            self.settings_dict['sources'][i][2].set_value(float(self.previous_settings['sources'][i][2]))
-                                            self.settings_dict['sources'][i][3] = ui.FloatField().model
-                                            self.settings_dict['sources'][i][3].set_value(float(self.previous_settings['sources'][i][3]))
-                                    else:   # Handling for sources added that aren't in the settings file
-                                        with ui.HStack(spacing=SPACING):
-                                            ui.Label(f"Source {i+1}", width=self.label_width)
-                                            ui.Label("Energy:", width=self.label_width)
-                                            self.settings_dict['sources'][i][0] = ui.FloatField().model
-
-                                            ui.Label("Location:", width=self.label_width)
-                                            self.settings_dict['sources'][i][1] = ui.FloatField().model
-                                            self.settings_dict['sources'][i][2] = ui.FloatField().model
-                                            self.settings_dict['sources'][i][3] = ui.FloatField().model
-
-                elif self.settings_dict['source_type'].get_item_value_model(None, 1).get_value_as_int() == 1: # Plasma Source Case
-                    print('ypou still need to sort this')
-                else:
-                    print('There was an error, unknown source type detected')
-
 
     def _build_export(self):
         with ui.VStack(height=0, spacing=SPACING):
@@ -210,6 +241,7 @@ class Window(ui.Window):
             with ui.VStack(height=0):
                 self._build_run()
                 self._build_materials()
+                self._build_sources()
                 self._build_settings()
                 self._build_export()
 
@@ -256,7 +288,19 @@ class Window(ui.Window):
             # Sources
             file.write('SOURCES\n')
             for src in self.settings_dict['sources']:
-                file.write(f"{src[0].get_value_as_float()} {src[1].get_value_as_float()} {src[2].get_value_as_float()} {src[3].get_value_as_float()}\n")
+                tmp_src = []
+                for field in src:
+                    try: # Basically handles any float or string coming out of the data fields and joins them with a space inbetween each
+                        tmp_field = field.get_value_as_float()
+                    except:
+                        pass
+                    try:
+                        tmp_field = field.get_value_as_string()
+                    except:
+                        pass
+                    tmp_src.append(str(tmp_field))
+                file.write(f"{' '.join(tmp_src)}\n")
+                
             # Settings 
             file.write('SETTINGS\n')
             file.write(f"batches {self.settings_dict['batches'].get_value_as_int()}\n")
@@ -265,10 +309,7 @@ class Window(ui.Window):
 
             file.write('EXT_SETTINGS\n')
             file.write(f"source_type {self.source_type_options[self.settings_dict['source_type'].get_item_value_model(None, 1).get_value_as_int()]}\n")
-            if self.settings_dict['source_type'].get_item_value_model(None, 1).get_value_as_int() == 0: # Point source case
-                file.write(f"num_sources {self.settings_dict['num_sources'].get_value_as_int()}\n")
-            elif self.settings_dict['source_type'].get_item_value_model(None, 1).get_value_as_int() == 1: # Plasma source case
-                file.write("num_sources 1\n") # Set to a default value
+            file.write(f"num_sources {self.settings_dict['num_sources'].get_value_as_int()}\n")
             file.write(f"test_dropdown {self.settings_dict['test_dropdown'].collapsed}\n")
             file.write(f"mats_dropdown {self.settings_dict['mats_dropdown'].collapsed}\n")
             file.write(f"sets_dropdown {self.settings_dict['sets_dropdown'].collapsed}\n")

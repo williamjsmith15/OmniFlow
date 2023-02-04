@@ -1,2 +1,2 @@
-    Bronze
-    Brass
+    Adobe_Brick
+    Aluminum_Cast
