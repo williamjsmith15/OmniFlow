@@ -183,7 +183,7 @@ class Window(ui.Window):
                             ui.Label("z")
                             self.settings_dict['sources'][i][2] = ui.FloatField().model
 
-                        for j in range(6):
+                        for j in range(5):
                             try:
                                 if j == 4:
                                     self.settings_dict['sources'][i][j].set_value(str(self.previous_settings['sources'][i][j]))
@@ -218,7 +218,7 @@ class Window(ui.Window):
                             ui.Label("Vert Offset")
                             self.settings_dict['sources'][i][5] = ui.FloatField().model
 
-                        for j in range(7):
+                        for j in range(6):
                             try:
                                 if j == 1:
                                     self.settings_dict['sources'][i][j].set_value(str(self.previous_settings['sources'][i][j]))
