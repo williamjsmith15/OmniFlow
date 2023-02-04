@@ -162,8 +162,36 @@ class Window(ui.Window):
 
                 # Fusion Point Source Case
                 elif self.settings_dict['source_type'].get_item_value_model(None, 1).get_value_as_int() == 1: 
-                    with ui.HStack():
-                        ui.Label("Fusion Point Source not yet implemented....", width=self.label_width)
+                    self.settings_dict['sources'] = []
+                    for i in range(int(self.previous_settings['num_sources'])):
+                        self.settings_dict['sources'].append([None]*5)
+                        with ui.HStack(spacing=SPACING):
+                            ui.Label(f"Source {i+1}", width=self.label_width)
+
+                        with ui.HStack(spacing=SPACING):
+                            ui.Label("Fuel Type (DT, DD)", width=self.label_width)
+                            self.settings_dict['sources'][i][4] = ui.StringField().model
+                            ui.Label("Temoerature (eV)", width=self.label_width)
+                            self.settings_dict['sources'][i][3] = ui.FloatField().model
+
+                        with ui.HStack(spacing=SPACING):
+                            ui.Label("Coordinate:")
+                            ui.Label("x")
+                            self.settings_dict['sources'][i][0] = ui.FloatField().model
+                            ui.Label("y")
+                            self.settings_dict['sources'][i][1] = ui.FloatField().model
+                            ui.Label("z")
+                            self.settings_dict['sources'][i][2] = ui.FloatField().model
+
+                        for j in range(6):
+                            try:
+                                if j == 4:
+                                    self.settings_dict['sources'][i][j].set_value(str(self.previous_settings['sources'][i][j]))
+                                else:
+                                    self.settings_dict['sources'][i][j].set_value(float(self.previous_settings['sources'][i][j]))
+                            except: # Handling of sources that don't have data
+                                print(f"No float data found for source {i+1}")
+
                 
                 # Fusion Ring Source Case
                 elif self.settings_dict['source_type'].get_item_value_model(None, 1).get_value_as_int() == 2: 
@@ -190,21 +218,87 @@ class Window(ui.Window):
                             ui.Label("Vert Offset")
                             self.settings_dict['sources'][i][5] = ui.FloatField().model
 
-                        try:
-                            self.settings_dict['sources'][i][0].set_value(float(self.previous_settings['sources'][i][0]))
-                            self.settings_dict['sources'][i][1].set_value(str(self.previous_settings['sources'][i][1]))
-                            self.settings_dict['sources'][i][2].set_value(float(self.previous_settings['sources'][i][2]))
-                            self.settings_dict['sources'][i][3].set_value(float(self.previous_settings['sources'][i][3]))
-                            self.settings_dict['sources'][i][4].set_value(float(self.previous_settings['sources'][i][4]))
-                            self.settings_dict['sources'][i][5].set_value(float(self.previous_settings['sources'][i][5]))
-                        except: # Handling of sources that don't have data
-                            print(f"No source data found for source {i+1}")
+                        for j in range(7):
+                            try:
+                                if j == 1:
+                                    self.settings_dict['sources'][i][j].set_value(str(self.previous_settings['sources'][i][j]))
+                                else:
+                                    self.settings_dict['sources'][i][j].set_value(float(self.previous_settings['sources'][i][j]))
+                            except: # Handling of sources that don't have data
+                                print(f"No float data found for source {i+1}")
 
 
                 # Tokamak Source Case
                 elif self.settings_dict['source_type'].get_item_value_model(None, 1).get_value_as_int() == 3: 
-                    with ui.HStack():
-                        ui.Label("Tokamak Source not yet implemented....", width=self.label_width)
+                    self.settings_dict['sources'] = []
+                    for i in range(int(self.previous_settings['num_sources'])):
+                        self.settings_dict['sources'].append([None]*19) # TODO: Check 18 is the correct number
+                        with ui.HStack(spacing=SPACING):
+                            ui.Label(f"Source {i+1}", width=self.label_width)
+                            ui.Label("Major Radius (m)", width=self.label_width)
+                            self.settings_dict['sources'][i][0] = ui.FloatField().model
+                            ui.Label("Minor Radius (m)", width=self.label_width)
+                            self.settings_dict['sources'][i][1] = ui.FloatField().model
+                            
+
+                        with ui.HStack(spacing=SPACING):
+                            ui.Label("Elongation", width=self.label_width)
+                            self.settings_dict['sources'][i][2] = ui.FloatField().model
+                            ui.Label("Triangularity")
+                            self.settings_dict['sources'][i][3] = ui.FloatField().model
+                            ui.Label("Confinement Mode (L,H,A)")
+                            self.settings_dict['sources'][i][4] = ui.StringField().model
+
+                        with ui.HStack(spacing=SPACING):
+                            ui.Label("Ion Density (m^-3) at:")
+                            ui.Label("Ion Density Peaking Factor")
+                            self.settings_dict['sources'][i][6] = ui.FloatField().model
+                        
+                        with ui.HStack(spacing=SPACING):
+                            ui.Label("Centre", width=self.label_width)
+                            self.settings_dict['sources'][i][5] = ui.FloatField().model
+                            ui.Label("Pedestal")
+                            self.settings_dict['sources'][i][7] = ui.FloatField().model
+                            ui.Label("Seperatrix")
+                            self.settings_dict['sources'][i][8] = ui.FloatField().model
+
+                        with ui.HStack(spacing=SPACING):
+                            ui.Label("Ion Temperature (KeV) at:")
+                            ui.Label("Peaking Factor")
+                            self.settings_dict['sources'][i][10] = ui.FloatField().model
+                            ui.Label("Beta")
+                            self.settings_dict['sources'][i][11] = ui.FloatField().model
+                        
+                        with ui.HStack(spacing=SPACING):
+                            ui.Label("Centre", width=self.label_width)
+                            self.settings_dict['sources'][i][9] = ui.FloatField().model
+                            ui.Label("Pedestal")
+                            self.settings_dict['sources'][i][12] = ui.FloatField().model
+                            ui.Label("Seperatrix")
+                            self.settings_dict['sources'][i][13] = ui.FloatField().model
+
+                        with ui.HStack(spacing=SPACING):
+                            ui.Label("Pedestal Raduis (m)", width=self.label_width)
+                            self.settings_dict['sources'][i][14] = ui.FloatField().model
+                            ui.Label("Shafranov Factor")
+                            self.settings_dict['sources'][i][15] = ui.FloatField().model
+                            ui.Label("Sample Size")
+                            self.settings_dict['sources'][i][18] = ui.FloatField().model
+
+                        with ui.HStack(spacing=SPACING):
+                            ui.Label("Angle (deg) start:", width=self.label_width)
+                            self.settings_dict['sources'][i][16] = ui.FloatField().model
+                            ui.Label("end:")
+                            self.settings_dict['sources'][i][17] = ui.FloatField().model
+
+                        for j in range(19):
+                            try:
+                                if j == 4:
+                                    self.settings_dict['sources'][i][j].set_value(str(self.previous_settings['sources'][i][j]))
+                                else:
+                                    self.settings_dict['sources'][i][j].set_value(float(self.previous_settings['sources'][i][j]))
+                            except: # Handling of sources that don't have data
+                                print(f"No float data found for source {i+1}")
                         
                 else:
                     print('There was an error, unknown source type detected')
