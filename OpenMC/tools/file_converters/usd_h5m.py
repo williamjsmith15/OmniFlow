@@ -278,8 +278,8 @@ class USDtoDAGMC:
                 # Get the material type of the meshes
                 material_name = str(get_bound_material(x))
                 try:
-                    material_name = material_name.split('<')[1] # Just get material name from between <>
-                    material_name = material_name.split('>')[0] # In form of UsdShade.Material(Usd.Prim(</World/Looks/Aluminum_Anodized>))
+                    # material_name = material_name.split('<')[1] # Just get material name from between <>
+                    # material_name = material_name.split('>')[0] # In form of UsdShade.Material(Usd.Prim(</World/Looks/Aluminum_Anodized>))
                     material_name = material_name.split('/')[-1] # Get the last name from file path
                     print(f"Material name is: {material_name}")
                 except:
