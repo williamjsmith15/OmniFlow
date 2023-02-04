@@ -7,6 +7,7 @@ import openmc
 import os
 import math
 import openmc_plasma_source as ops
+import numpy as np
 
 # Find the settings file
 sep = os.sep
@@ -88,7 +89,7 @@ dagmc_univ = openmc.DAGMCUniverse(filename=geometry_path)
 # geometry.export_to_xml()
 
 # creates an edge of universe boundary surface
-vac_surf = openmc.Sphere(r=100000, surface_id=9999, boundary_type="vacuum")
+vac_surf = openmc.Sphere(r=10000, surface_id=9999, boundary_type="vacuum")
 # adds reflective surface for the sector model at 0 degrees
 reflective_1 = openmc.Plane(
     a=math.sin(0),
@@ -121,25 +122,18 @@ geometry.export_to_xml()
 
 settings = openmc.Settings()
 
-source_type_point = True
+source_type = ''
 
 for ex_setting in ex_settings:
-    try:
-        if ex_setting[0] == "source_type":
-            if ex_setting[1] == "Point":
-                source_type_point = True
-            elif ex_setting[1] == "Plasma":
-                source_type_point = False
-            else:
-                print(f"Don't know what to do with source type {ex_setting[1]} {ex_setting[2]}")
-        else:
-            print(f"Don't know what to do with {ex_setting}")
-    except:
-        print(f"Ran into an error with {ex_setting}")
+    if ex_setting[0] == "source_type":
+        source_type = " ".join(ex_setting[1:])
+    else:
+        print(f"Don't know what to do with {ex_setting}")
 
 # Sources
-if source_type_point: # If a point source
-    sources = []
+sources = []
+angle_conversion = (2*np.pi)/360
+if source_type == 'Point Source': # If a point source
     for source in sources_input:
         source_pnt = openmc.stats.Point(xyz=(float(source[1]), float(source[2]), float(source[3])))
         source = openmc.Source(space=source_pnt, energy=openmc.stats.Discrete(x=[float(source[0]),], p=[1.0,]))
@@ -147,8 +141,29 @@ if source_type_point: # If a point source
     source_str = 1.0 / len(sources)
     for source in sources:
         source.strength = source_str
-else: # If a plasma source
-    sources = ops.FusionRingSource() # TODO: need to sort this out
+elif source_type == 'Fusion Point Source':
+    for source in sources_input:
+        source_single = ops.FusionPointSource(
+
+        )
+        sources.append(source_single)
+elif source_type == 'Fusion Ring Source':
+    for source in sources_input:
+        source_single = ops.FusionRingSource(
+            angles =        (float(source[2])*angle_conversion, float(source[3])*angle_conversion),
+            radius =        float(source[0]),
+            temperature =   float(source[4]),
+            fuel =          str(source[1])
+        )
+        sources.append(source_single)
+elif source_type == 'Tokamak Source':
+    for source in sources_input:
+        source_single = ops.TokamakSource(
+
+        ).make_openmc_sources()
+        sources.append(source_single)
+else:
+    print(f'I dont know what to do with {source_type}')
 
 settings.source = sources
 

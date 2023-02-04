@@ -1,16 +1,14 @@
 MATERIALS
-    Adobe_Brick
-    Aluminum_Cast
+Asphalt Fe 7.699999809265137
 SOURCES
-14.000000 DT 23.000000 0.041000 13.000000
-0.000000 0.000000 0.000000 0.000000 0.000000
+50.000000 DT 0.000000 360.000000 20000.000000
 SETTINGS
-batches 12
-particles 1000
+batches 10
+particles 100
 run_mode fixed source
 EXT_SETTINGS
 source_type Fusion Ring Source
-num_sources 2
+num_sources 1
 test_dropdown True
 mats_dropdown False
 sets_dropdown False
