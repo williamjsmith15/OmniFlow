@@ -350,43 +350,46 @@ class USDtoDAGMC:
                 endOfVolumeIdx = np.size(self.vertices,0)
                 trianglesForVolume = np.array([], dtype="int")
 
-                for Count in allVertexCounts:
-                    if Count == 3:      # Triangle
-                        a, b, c = globalCount, globalCount+1, globalCount+2
-                        # For explanation of +volumeOffset see initialisation of volumeOffset variable
-                        if trianglesForVolume.size == 0: # This whole shenanegans is because i dont know how to use numpy arrays properly.... LEARN
-                            trianglesForVolume = np.array([[allVertexIndices[a]+volumeOffset, allVertexIndices[b]+volumeOffset, allVertexIndices[c]+volumeOffset]])
-                        else:
-                            trianglesForVolume = np.append(trianglesForVolume, np.array([[allVertexIndices[a]+volumeOffset, allVertexIndices[b]+volumeOffset, allVertexIndices[c]+volumeOffset]]), axis=0)
-                    elif Count == 4:    # Quadrilateral => Split into 2 triangles
-                        a, b, c, d = globalCount, globalCount+1, globalCount+2, globalCount+3
-                        if trianglesForVolume.size == 0:
-                            trianglesForVolume = np.array([[allVertexIndices[a]+volumeOffset, allVertexIndices[b]+volumeOffset, allVertexIndices[c]+volumeOffset]])
-                        else:
-                            trianglesForVolume = np.append(trianglesForVolume, np.array([[allVertexIndices[a]+volumeOffset, allVertexIndices[b]+volumeOffset, allVertexIndices[c]+volumeOffset]]), axis=0)
-                        #Think this may cause issues with some quadrilaterials being split into 2 triangles that overlap and leave a gap - see latex doc
-                        trianglesForVolume = np.append(trianglesForVolume, np.array([[allVertexIndices[a]+volumeOffset, allVertexIndices[c]+volumeOffset, allVertexIndices[d]+volumeOffset]]), axis=0) 
-                    elif Count > 4:     # n points to triangles
-                        indices = np.array([allVertexIndices[globalCount+i]+volumeOffset for i in range(Count)]) # Get array of indices of points 
-                        points = np.array([self.vertices[idx] for idx in indices]) # Get points that match those indices
-                        # Find mifddle of n-sided polygon => can make triangles from every edge to centre point and add to end of vertices matrix
-                        self.vertices = np.append(self.vertices, np.array([[np.average(points[:,dir]) for dir in range(3)]]), axis=0) 
-                        
-                        centrePointIdx = endOfVolumeIdx + extraPointCount
-                        extraPointCount += 1 # Just added an extra point into the vertices array
-
-                        for triangleNum in range(Count):
-                            if triangleNum == Count - 1: # Last triangle
-                                trianglesForVolume = np.append(trianglesForVolume, np.array([[indices[0], indices[triangleNum], centrePointIdx]]), axis=0)
+                if np.all(allVertexCounts == 3): # Case where mesh is already in triangles (makes program run much faster - hopeuflly!)
+                    trianglesForVolume = allVertexIndices.reshape((allVertexCounts.size,3)) + volumeOffset
+                else:
+                    for Count in allVertexCounts:
+                        if Count == 3:      # Triangle
+                            a, b, c = globalCount, globalCount+1, globalCount+2
+                            # For explanation of +volumeOffset see initialisation of volumeOffset variable
+                            if trianglesForVolume.size == 0: # This whole shenanegans is because i dont know how to use numpy arrays properly.... LEARN
+                                trianglesForVolume = np.array([[allVertexIndices[a]+volumeOffset, allVertexIndices[b]+volumeOffset, allVertexIndices[c]+volumeOffset]])
                             else:
-                                if trianglesForVolume.size == 0:
-                                    trianglesForVolume = np.array([[indices[triangleNum], indices[triangleNum+1], centrePointIdx]])
+                                trianglesForVolume = np.append(trianglesForVolume, np.array([[allVertexIndices[a]+volumeOffset, allVertexIndices[b]+volumeOffset, allVertexIndices[c]+volumeOffset]]), axis=0)
+                        elif Count == 4:    # Quadrilateral => Split into 2 triangles
+                            a, b, c, d = globalCount, globalCount+1, globalCount+2, globalCount+3
+                            if trianglesForVolume.size == 0:
+                                trianglesForVolume = np.array([[allVertexIndices[a]+volumeOffset, allVertexIndices[b]+volumeOffset, allVertexIndices[c]+volumeOffset]])
+                            else:
+                                trianglesForVolume = np.append(trianglesForVolume, np.array([[allVertexIndices[a]+volumeOffset, allVertexIndices[b]+volumeOffset, allVertexIndices[c]+volumeOffset]]), axis=0)
+                            #Think this may cause issues with some quadrilaterials being split into 2 triangles that overlap and leave a gap - see latex doc
+                            trianglesForVolume = np.append(trianglesForVolume, np.array([[allVertexIndices[a]+volumeOffset, allVertexIndices[c]+volumeOffset, allVertexIndices[d]+volumeOffset]]), axis=0) 
+                        elif Count > 4:     # n points to triangles
+                            indices = np.array([allVertexIndices[globalCount+i]+volumeOffset for i in range(Count)]) # Get array of indices of points 
+                            points = np.array([self.vertices[idx] for idx in indices]) # Get points that match those indices
+                            # Find mifddle of n-sided polygon => can make triangles from every edge to centre point and add to end of vertices matrix
+                            self.vertices = np.append(self.vertices, np.array([[np.average(points[:,dir]) for dir in range(3)]]), axis=0) 
+                            
+                            centrePointIdx = endOfVolumeIdx + extraPointCount
+                            extraPointCount += 1 # Just added an extra point into the vertices array
+
+                            for triangleNum in range(Count):
+                                if triangleNum == Count - 1: # Last triangle
+                                    trianglesForVolume = np.append(trianglesForVolume, np.array([[indices[0], indices[triangleNum], centrePointIdx]]), axis=0)
                                 else:
-                                    trianglesForVolume = np.append(trianglesForVolume, np.array([[indices[triangleNum], indices[triangleNum+1], centrePointIdx]]), axis=0)
-                    else:
-                        print(f"I don't know what to do with a {Count} count yet...")
+                                    if trianglesForVolume.size == 0:
+                                        trianglesForVolume = np.array([[indices[triangleNum], indices[triangleNum+1], centrePointIdx]])
+                                    else:
+                                        trianglesForVolume = np.append(trianglesForVolume, np.array([[indices[triangleNum], indices[triangleNum+1], centrePointIdx]]), axis=0)
+                        else:
+                            print(f"I don't know what to do with a {Count} count yet...")
                     
-                    globalCount += Count
+                        globalCount += Count
 
                 
                 self.triangles.append(trianglesForVolume)
