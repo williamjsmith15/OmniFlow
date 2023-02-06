@@ -90,6 +90,11 @@ dagmc_univ = openmc.DAGMCUniverse(filename=geometry_path)
 
 # creates an edge of universe boundary surface
 vac_surf = openmc.Sphere(r=100000, surface_id=9999, boundary_type="vacuum")
+# lead_surf = -openmc.Sphere(r=60000) & + openmc.Sphere(r=50000)
+# lead = openmc.Material(name='lead')
+# lead.set_density('g/cc', 11.4)
+# lead.add_element('Pb', 1)
+# lead_cell = openmc.Cell(fill=lead, region=lead_surf)
 # adds reflective surface for the sector model at 0 degrees
 reflective_1 = openmc.Plane(
     a=math.sin(0),

@@ -1,15 +1,16 @@
 MATERIALS
-Iron Fe 7.699999809265137
+Iron C 2.259999990463257
+Copper Pb 11.289999961853027
 SOURCES
-3758.000000 DT 0.000000 360.000000 20000.000000 9845.000000
+1226.000000 DT 0.000000 360.000000 20000.000000 0.000000
 SETTINGS
-batches 3
-particles 50
+batches 5
+particles 500
 run_mode fixed source
 EXT_SETTINGS
 source_type Fusion Ring Source
 num_sources 1
-up_axis Y
+up_axis Z
 test_dropdown True
 mats_dropdown False
 sets_dropdown False
