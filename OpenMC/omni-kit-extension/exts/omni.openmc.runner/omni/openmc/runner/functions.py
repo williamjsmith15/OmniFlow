@@ -142,6 +142,7 @@ def get_materials():
 
     print('Running materials getter')
     print(f"cwltool --outdir {paths['output_omni']} {paths['workflow']}{sep}dagmc_material_name{sep}dagmc_materials.cwl {paths['workflow']}{sep}dagmc_material_name{sep}dagmc_materials.yml")
+    os.system('touch /home/williamjsmith15/Desktop/test_omni.txt')
     os.system(f"cwltool --outdir {paths['output_omni']} {paths['workflow']}{sep}dagmc_material_name{sep}dagmc_materials.cwl {paths['workflow']}{sep}dagmc_material_name{sep}dagmc_materials.yml")
 
     mat_file_path = f"{paths['output_omni']}{paths['sep']}materials.txt"

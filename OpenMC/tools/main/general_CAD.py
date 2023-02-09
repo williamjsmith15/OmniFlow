@@ -89,7 +89,7 @@ dagmc_univ = openmc.DAGMCUniverse(filename=geometry_path)
 # geometry.export_to_xml()
 
 # creates an edge of universe boundary surface
-vac_surf = openmc.Sphere(r=100000, surface_id=9999, boundary_type="vacuum")
+vac_surf = openmc.Sphere(r=10, surface_id=9999, boundary_type="vacuum") # Normally like 100000
 # lead_surf = -openmc.Sphere(r=60000) & + openmc.Sphere(r=50000)
 # lead = openmc.Material(name='lead')
 # lead.set_density('g/cc', 11.4)

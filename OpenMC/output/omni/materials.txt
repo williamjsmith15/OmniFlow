@@ -1,5 +1,7 @@
-    Iron
-    Iron
-    Copper
-    Copper
-    Copper
+    Steel_Cast
+    Steel_Cast
+    Iron_01
+    Iron_01
+    Iron_01
+    Iron_01
+    Iron_01
