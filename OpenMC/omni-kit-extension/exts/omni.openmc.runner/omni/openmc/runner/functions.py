@@ -1,6 +1,8 @@
 import os, tarfile, tempfile, pathlib # System packages
 import omni
 
+import subprocess, sys # Alternative to os to run shell commands - dont know why it wasn't working before...
+
 import docker
 
 ###################################
@@ -24,7 +26,7 @@ paths = {
         "share"             : f"{tmp}{sep}share",
         "usdTmp"            : f"{tmp}{sep}usd",
         "outTmpOpenMC"      : f"{tmp}{sep}outOpenMC",
-        "workflowDest"      : "/" # IN container
+        "workflowDest"      : "/" # In container
     }
 
 pathlib.Path(paths["share"]).mkdir(parents=True, exist_ok=True)
@@ -134,16 +136,33 @@ def run_workflow():
 
 
 def get_materials():
-    # Gets material names from the dagmc.h5m file (if its in the paramak folder)
+    # Gets material names from the usd file outputted by the omniverse extension
     print("Getting Material Names")
 
     print('Exporting File')
     export_stage()
 
+    print(ext_path)
+
     print('Running materials getter')
-    print(f"cwltool --outdir {paths['output_omni']} {paths['workflow']}{sep}dagmc_material_name{sep}dagmc_materials.cwl {paths['workflow']}{sep}dagmc_material_name{sep}dagmc_materials.yml")
-    os.system('touch /home/williamjsmith15/Desktop/test_omni.txt')
-    os.system(f"cwltool --outdir {paths['output_omni']} {paths['workflow']}{sep}dagmc_material_name{sep}dagmc_materials.cwl {paths['workflow']}{sep}dagmc_material_name{sep}dagmc_materials.yml")
+
+    cmd = f"cwltool --outdir {paths['output_omni']} {paths['workflow']}{sep}dagmc_material_name{sep}dagmc_materials.cwl {paths['workflow']}{sep}dagmc_material_name{sep}dagmc_materials.yml"
+    print(cmd)
+
+    # output = subprocess.run(["toil-cwl-runner", "--outdir", paths['output_omni'], f"{paths['workflow']}{sep}dagmc_material_name{sep}dagmc_materials.cwl", f"{paths['workflow']}{sep}dagmc_material_name{sep}dagmc_materials.yml"], capture_output=True, text=True)
+
+    # print(f'stdout:\n\n{output.stdout}\n\n')
+    # print(f'stderr:\n\n{output.stderr}\n\n')
+
+    # output = subprocess.run(["cwltool", "/home/williamjsmith15/PhD/OmniFlow/test.txt"], capture_output=True, text=True)
+
+    # print(f'stdout:\n\n{output.stdout}\n\n')
+    # print(f'stderr:\n\n{output.stderr}\n\n')
+
+    output = subprocess.run([i for i in cmd.split(' ')], capture_output=True, text=True)
+
+    print(f'stdout:\n\n{output.stdout}\n\n')
+    print(f'stderr:\n\n{output.stderr}\n\n')
 
     mat_file_path = f"{paths['output_omni']}{paths['sep']}materials.txt"
     materials = []

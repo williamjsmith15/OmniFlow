@@ -1,7 +1,3 @@
-    Steel_Cast
-    Steel_Cast
-    Iron_01
-    Iron_01
-    Iron_01
-    Iron_01
-    Iron_01
+    Aluminum_Anodized
+    Asphalt
+    Adobe_Brick
