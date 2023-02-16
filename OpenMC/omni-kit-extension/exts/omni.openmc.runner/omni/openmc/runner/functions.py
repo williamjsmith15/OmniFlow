@@ -3,7 +3,6 @@ import omni
 
 import subprocess, sys # Alternative to os to run shell commands - dont know why it wasn't working before...
 
-import docker
 
 ###################################
 ## Set Paths & Get Temp Folders
@@ -70,44 +69,8 @@ def toy_test():
     #Test Toy
     print("Running Toy Test Workflow")
 
-    new_sys = False # True to test docker system
-    if new_sys:
-        # Attach to toil docker container 
-        client = docker.from_env()
-        toilContainer = client.containers.get("omniflow-toil-1")
-
-        # Send CWL files to container
-        print('Sending Files')
-        send_files(
-            container = toilContainer,
-            source = paths["workflow"],
-            temp = f'{paths["share"]}{sep}cwlBundle.tar',
-            destination = paths["workflowDest"]
-        )
-
-        # GET AND COPY USD FILE HERE
-
-        # Run toil
-        print('Running Workflow in Container') 
-        var = toilContainer.exec_run(
-            ["cwltool",
-            "--outdir", f"{paths['output_container']}/toy",
-            "/tests/toy/openmc_tool_toy.cwl",
-            "/tests/toy/script_loc_toy.yml"]
-        )
-        print(var)
-        
-        # Copy files back to output folder
-        print('Retrieving Files')
-        get_files(
-            container = toilContainer,
-            source = paths['output_container'],
-            destination = paths['output_sim'],
-            fname = 'toy_output'
-        )
-    else:
-        print(f"cwltool --outdir {paths['output_test']} {paths['workflow']}{sep}tests{sep}toy{sep}openmc_tool_toy.cwl {paths['workflow']}{sep}tests{sep}toy{sep}script_loc_toy.yml")
-        os.system(f"cwltool --outdir {paths['output_test']} {paths['workflow']}{sep}tests{sep}toy{sep}openmc_tool_toy.cwl {paths['workflow']}{sep}tests{sep}toy{sep}script_loc_toy.yml")
+    print(f"cwltool --outdir {paths['output_test']} {paths['workflow']}{sep}tests{sep}toy{sep}openmc_tool_toy.cwl {paths['workflow']}{sep}tests{sep}toy{sep}script_loc_toy.yml")
+    os.system(f"cwltool --outdir {paths['output_test']} {paths['workflow']}{sep}tests{sep}toy{sep}openmc_tool_toy.cwl {paths['workflow']}{sep}tests{sep}toy{sep}script_loc_toy.yml")
 
     print(f"Toy Test Complete! Your files will be in: {paths['output_test']}")
 
