@@ -1,17 +1,17 @@
 MATERIALS
-    Aluminum_Anodized
-    Asphalt
-    Adobe_Brick
+Aluminum_Anodized Fe 7.699999809265137
+Aluminum_Anodized_Black_01 Fe 7.699999809265137
+Adobe_Brick Fe 7.699999809265137
 SOURCES
-1.424510 DT 0.000000 360.000000 20000.000000 0.000000
+12.000000 0.000000 0.000000 0.000000
 SETTINGS
 batches 5
 particles 50
 run_mode fixed source
 EXT_SETTINGS
-source_type Fusion Ring Source
+source_type Point Source
 num_sources 1
-up_axis Z
+up_axis Y
 test_dropdown True
 mats_dropdown False
 sets_dropdown False

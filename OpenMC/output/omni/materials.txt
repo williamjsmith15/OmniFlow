@@ -1,3 +1,3 @@
     Aluminum_Anodized
-    Asphalt
+    Aluminum_Anodized_Black_01
     Adobe_Brick
