@@ -1,3 +1,1 @@
-    Aluminum_Anodized
-    Aluminum_Anodized_Black_01
-    Adobe_Brick
+    Blue_Glass
