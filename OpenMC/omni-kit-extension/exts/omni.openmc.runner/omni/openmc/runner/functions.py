@@ -69,7 +69,7 @@ def toy_test():
     #Test Toy
     print("Running Toy Test Workflow")
 
-    cmd = f"toil-cwl-runner --outdir {paths['output_test']} {paths['workflow']}{sep}tests{sep}toy{sep}openmc_tool_toy.cwl {paths['workflow']}{sep}tests{sep}toy{sep}script_loc_toy.yml"
+    cmd = f"cwltool --outdir {paths['output_test']} {paths['workflow']}{sep}tests{sep}toy{sep}openmc_tool_toy.cwl {paths['workflow']}{sep}tests{sep}toy{sep}script_loc_toy.yml"
     print(cmd)
 
     output = subprocess.run([i for i in cmd.split(' ')], capture_output=True, text=True)
@@ -86,7 +86,7 @@ def simple_CAD_test():
     #Test Simple CAD
     print("Running Simple CAD Test Workflow")
 
-    cmd = f"toil-cwl-runner --outdir {paths['output_test']} {paths['workflow']}{sep}tests{sep}simple{sep}simple_CAD_workflow.cwl {paths['workflow']}{sep}tests{sep}simple{sep}script_loc_simple_CAD.yml"
+    cmd = f"cwltool --outdir {paths['output_test']} {paths['workflow']}{sep}tests{sep}simple{sep}simple_CAD_workflow.cwl {paths['workflow']}{sep}tests{sep}simple{sep}script_loc_simple_CAD.yml"
     print(cmd)
 
     output = subprocess.run([i for i in cmd.split(' ')], capture_output=True, text=True)
@@ -108,7 +108,7 @@ def run_workflow():
 
     print("Running Workflow")
 
-    cmd = f"toil-cwl-runner --outdir {paths['output_sim']} {paths['workflow']}{sep}main{sep}openmc_workflow.cwl {paths['workflow']}{sep}main{sep}script_loc.yml"
+    cmd = f"cwltool --outdir {paths['output_sim']} {paths['workflow']}{sep}main{sep}openmc_workflow.cwl {paths['workflow']}{sep}main{sep}script_loc.yml"
     print(cmd)
 
     output = subprocess.run([i for i in cmd.split(' ')], capture_output=True, text=True)
@@ -133,7 +133,7 @@ def get_materials():
 
     print('Running materials getter')
 
-    cmd = f"toil-cwl-runner --outdir {paths['output_omni']} {paths['workflow']}{sep}dagmc_material_name{sep}dagmc_materials.cwl {paths['workflow']}{sep}dagmc_material_name{sep}dagmc_materials.yml"
+    cmd = f"cwltool --outdir {paths['output_omni']} {paths['workflow']}{sep}dagmc_material_name{sep}dagmc_materials.cwl {paths['workflow']}{sep}dagmc_material_name{sep}dagmc_materials.yml"
     print(cmd)
 
     output = subprocess.run([i for i in cmd.split(' ')], capture_output=True, text=True)
@@ -141,7 +141,7 @@ def get_materials():
     print(f'stdout:\n\n{output.stdout}\n\n')
     print(f'stderr:\n\n{output.stderr}\n\n')
 
-    # output = subprocess.run(["toil-cwl-runner", "--outdir", paths['output_omni'], f"{paths['workflow']}{sep}dagmc_material_name{sep}dagmc_materials.cwl", f"{paths['workflow']}{sep}dagmc_material_name{sep}dagmc_materials.yml"], capture_output=True, text=True)
+    # output = subprocess.run(["cwltool", "--outdir", paths['output_omni'], f"{paths['workflow']}{sep}dagmc_material_name{sep}dagmc_materials.cwl", f"{paths['workflow']}{sep}dagmc_material_name{sep}dagmc_materials.yml"], capture_output=True, text=True)
 
     # print(f'stdout:\n\n{output.stdout}\n\n')
     # print(f'stderr:\n\n{output.stderr}\n\n')
