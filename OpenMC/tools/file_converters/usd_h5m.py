@@ -2,7 +2,14 @@ from typing import Iterable
 from pxr import Usd, UsdShade
 from vertices_to_h5m import vertices_to_h5m
 import numpy as np
-import os
+import os, tempfile
+
+sep = os.sep    # System separator
+ext_path = os.path.realpath(__file__)   # File path of ext
+parent_folder = ext_path.split(f"{sep}omni-kit", 1)[0]  # File path of parent folder to extension
+tmp       = tempfile.gettempdir()
+path_py = os.path.realpath(__file__)
+
 
 # Name of file changeable for ease of testing... default should be 'dagmc.usd'
 fname_root = 'dagmc' # Default
@@ -53,11 +60,11 @@ def propertyIsValid (primative, parameterName):
 
 def get_rot(rotation):
     # Calculates rotation matrix given a x,y,z rotation in degrees
-    factor = 2 * np.pi / 360   # Convert to radians
+    factor = 2.0 * np.pi / 360.0   # Convert to radians
     x_angle, y_angle, z_angle = rotation[0]*factor, rotation[1]*factor, rotation[2]*factor
-    x_rot = np.array([[1,0,0],[0,np.cos(x_angle),-np.sin(x_angle)],[0,np.sin(x_angle),np.cos(x_angle)]])
-    y_rot = np.array([[np.cos(y_angle),0,np.sin(y_angle)],[0,1,0],[-np.sin(y_angle),0,np.cos(y_angle)]])
-    z_rot = np.array([[np.cos(z_angle),-np.sin(z_angle),0],[np.sin(z_angle),np.cos(z_angle),0],[0,0,1]])
+    x_rot = np.array([[1,0,0],[0,np.cos(x_angle),-np.sin(x_angle)],[0,np.sin(x_angle),np.cos(x_angle)]], dtype='float64')
+    y_rot = np.array([[np.cos(y_angle),0,np.sin(y_angle)],[0,1,0],[-np.sin(y_angle),0,np.cos(y_angle)]], dtype='float64')
+    z_rot = np.array([[np.cos(z_angle),-np.sin(z_angle),0],[np.sin(z_angle),np.cos(z_angle),0],[0,0,1]], dtype='float64')
     rot_mat = np.dot(np.dot(x_rot,y_rot),z_rot)
     return rot_mat
 
@@ -266,34 +273,67 @@ class USDtoDAGMC:
                          # for each individual volume as all vertices for new volumes are added into the same array as previous
                          # volumes (vertices is 1D, triangles is 2D with 2nd dimension have the number of volumes in)
 
+        material_count = 0 # For materials that 'fall through the net'
+
+        # Change as NVIDIA is annoying with its choice of up axis (they choose Y whereas it should be Z for OpenMC...)
+        # Find parent folder path
+        if "PhD" in path_py:
+            cwl_folder = path_py.split(f"{sep}PhD", 1)[0]
+        elif "cwl" in path_py:
+            cwl_folder = path_py.split(f"{sep}cwl", 1)[0]
+
+        # Find settings and dagmc files
+        for root, dirs, files in os.walk(cwl_folder):
+            for file in files:
+                if file.endswith("settings.txt"):
+                    settings_path = os.path.join(root, file)
+
+        with open(settings_path, 'r') as file:
+            for line in file:
+                if "up_axis" in line:
+                    up_axis = line.split()[1]
+
         for primID, x in enumerate(stage.Traverse()):
             primType = x.GetTypeName()
             print(f"PRIM: {str(primType)}")
             print(f'PrimID is {primID}')
 
             if str(primType) == 'Mesh':
+                material_count += 1
                 # Get the material type of the meshes
                 material_name = str(get_bound_material(x))
                 try:
                     material_name = material_name.split('<')[1] # Just get material name from between <>
                     material_name = material_name.split('>')[0] # In form of UsdShade.Material(Usd.Prim(</World/Looks/Aluminum_Anodized>))
                     material_name = material_name.split('/')[-1] # Get the last name from file path
-                    print(material_name)
+                    print(f"Material name is: {material_name}")
                 except:
-                    print('No material found')
+                    material_name = f"mesh_{material_count}"
+                    print('No USD material found')
+                    print(f'Setting material name to default: {material_name}')
 
                 # Get num of vertecies in elements
                 allVertexCounts  = np.array(getValidProperty(x,"faceVertexCounts"))
                 allVertexIndices = np.array(getValidProperty(x,"faceVertexIndices"))
 
                 # Get if there is rotation or translation of the meshes
-                rotation = [0,0,0] if not propertyIsValid(x,"xformOp:rotateXYZ") else list(getProperty(x,"xformOp:rotateXYZ"))
+                rotation = [0.0,0.0,0.0] if not propertyIsValid(x,"xformOp:rotateXYZ") else list(getProperty(x,"xformOp:rotateXYZ"))
                 translation = np.array([0,0,0]) if not propertyIsValid(x,"xformOp:translate") else np.array(list(getProperty(x,"xformOp:translate")))
                 print(f'Rotation is {rotation}')
                 print(f'Translation is {translation}')
 
+                # Handling for changing the up axis
+                if up_axis == 'X':
+                    rotation[1] -= 90.0 # TODO: Check this is correct...
+                elif up_axis == 'Y':
+                    rotation[0] += 90.0
+                elif up_axis == 'Z':
+                    rotation = rotation
+                else:
+                    print('Something went wrong with up_axis')
+
+
                 rot_matrix = get_rot(rotation)
-                print(rot_matrix)
                 
                 # TODO: Make the rotation matrix multiplication better! Lazy coding for now...
                 newVertices = np.array(getValidProperty(x,"points"), dtype='float64') # Assign vertices here and add rotation and translation
@@ -310,43 +350,46 @@ class USDtoDAGMC:
                 endOfVolumeIdx = np.size(self.vertices,0)
                 trianglesForVolume = np.array([], dtype="int")
 
-                for Count in allVertexCounts:
-                    if Count == 3:      # Triangle
-                        a, b, c = globalCount, globalCount+1, globalCount+2
-                        # For explanation of +volumeOffset see initialisation of volumeOffset variable
-                        if trianglesForVolume.size == 0: # This whole shenanegans is because i dont know how to use numpy arrays properly.... LEARN
-                            trianglesForVolume = np.array([[allVertexIndices[a]+volumeOffset, allVertexIndices[b]+volumeOffset, allVertexIndices[c]+volumeOffset]])
-                        else:
-                            trianglesForVolume = np.append(trianglesForVolume, np.array([[allVertexIndices[a]+volumeOffset, allVertexIndices[b]+volumeOffset, allVertexIndices[c]+volumeOffset]]), axis=0)
-                    elif Count == 4:    # Quadrilateral => Split into 2 triangles
-                        a, b, c, d = globalCount, globalCount+1, globalCount+2, globalCount+3
-                        if trianglesForVolume.size == 0:
-                            trianglesForVolume = np.array([[allVertexIndices[a]+volumeOffset, allVertexIndices[b]+volumeOffset, allVertexIndices[c]+volumeOffset]])
-                        else:
-                            trianglesForVolume = np.append(trianglesForVolume, np.array([[allVertexIndices[a]+volumeOffset, allVertexIndices[b]+volumeOffset, allVertexIndices[c]+volumeOffset]]), axis=0)
-                        #Think this may cause issues with some quadrilaterials being split into 2 triangles that overlap and leave a gap - see latex doc
-                        trianglesForVolume = np.append(trianglesForVolume, np.array([[allVertexIndices[a]+volumeOffset, allVertexIndices[c]+volumeOffset, allVertexIndices[d]+volumeOffset]]), axis=0) 
-                    elif Count > 4:     # n points to triangles
-                        indices = np.array([allVertexIndices[globalCount+i]+volumeOffset for i in range(Count)]) # Get array of indices of points 
-                        points = np.array([self.vertices[idx] for idx in indices]) # Get points that match those indices
-                        # Find mifddle of n-sided polygon => can make triangles from every edge to centre point and add to end of vertices matrix
-                        self.vertices = np.append(self.vertices, np.array([[np.average(points[:,dir]) for dir in range(3)]]), axis=0) 
-                        
-                        centrePointIdx = endOfVolumeIdx + extraPointCount
-                        extraPointCount += 1 # Just added an extra point into the vertices array
-
-                        for triangleNum in range(Count):
-                            if triangleNum == Count - 1: # Last triangle
-                                trianglesForVolume = np.append(trianglesForVolume, np.array([[indices[0], indices[triangleNum], centrePointIdx]]), axis=0)
+                if np.all(allVertexCounts == 3): # Case where mesh is already in triangles (makes program run much faster - hopeuflly!)
+                    trianglesForVolume = allVertexIndices.reshape((allVertexCounts.size,3)) + volumeOffset
+                else:
+                    for Count in allVertexCounts:
+                        if Count == 3:      # Triangle
+                            a, b, c = globalCount, globalCount+1, globalCount+2
+                            # For explanation of +volumeOffset see initialisation of volumeOffset variable
+                            if trianglesForVolume.size == 0: # This whole shenanegans is because i dont know how to use numpy arrays properly.... LEARN
+                                trianglesForVolume = np.array([[allVertexIndices[a]+volumeOffset, allVertexIndices[b]+volumeOffset, allVertexIndices[c]+volumeOffset]])
                             else:
-                                if trianglesForVolume.size == 0:
-                                    trianglesForVolume = np.array([[indices[triangleNum], indices[triangleNum+1], centrePointIdx]])
+                                trianglesForVolume = np.append(trianglesForVolume, np.array([[allVertexIndices[a]+volumeOffset, allVertexIndices[b]+volumeOffset, allVertexIndices[c]+volumeOffset]]), axis=0)
+                        elif Count == 4:    # Quadrilateral => Split into 2 triangles
+                            a, b, c, d = globalCount, globalCount+1, globalCount+2, globalCount+3
+                            if trianglesForVolume.size == 0:
+                                trianglesForVolume = np.array([[allVertexIndices[a]+volumeOffset, allVertexIndices[b]+volumeOffset, allVertexIndices[c]+volumeOffset]])
+                            else:
+                                trianglesForVolume = np.append(trianglesForVolume, np.array([[allVertexIndices[a]+volumeOffset, allVertexIndices[b]+volumeOffset, allVertexIndices[c]+volumeOffset]]), axis=0)
+                            #Think this may cause issues with some quadrilaterials being split into 2 triangles that overlap and leave a gap - see latex doc
+                            trianglesForVolume = np.append(trianglesForVolume, np.array([[allVertexIndices[a]+volumeOffset, allVertexIndices[c]+volumeOffset, allVertexIndices[d]+volumeOffset]]), axis=0) 
+                        elif Count > 4:     # n points to triangles
+                            indices = np.array([allVertexIndices[globalCount+i]+volumeOffset for i in range(Count)]) # Get array of indices of points 
+                            points = np.array([self.vertices[idx] for idx in indices]) # Get points that match those indices
+                            # Find mifddle of n-sided polygon => can make triangles from every edge to centre point and add to end of vertices matrix
+                            self.vertices = np.append(self.vertices, np.array([[np.average(points[:,dir]) for dir in range(3)]]), axis=0) 
+                            
+                            centrePointIdx = endOfVolumeIdx + extraPointCount
+                            extraPointCount += 1 # Just added an extra point into the vertices array
+
+                            for triangleNum in range(Count):
+                                if triangleNum == Count - 1: # Last triangle
+                                    trianglesForVolume = np.append(trianglesForVolume, np.array([[indices[0], indices[triangleNum], centrePointIdx]]), axis=0)
                                 else:
-                                    trianglesForVolume = np.append(trianglesForVolume, np.array([[indices[triangleNum], indices[triangleNum+1], centrePointIdx]]), axis=0)
-                    else:
-                        print(f"I don't know what to do with a {Count} count yet...")
+                                    if trianglesForVolume.size == 0:
+                                        trianglesForVolume = np.array([[indices[triangleNum], indices[triangleNum+1], centrePointIdx]])
+                                    else:
+                                        trianglesForVolume = np.append(trianglesForVolume, np.array([[indices[triangleNum], indices[triangleNum+1], centrePointIdx]]), axis=0)
+                        else:
+                            print(f"I don't know what to do with a {Count} count yet...")
                     
-                    globalCount += Count
+                        globalCount += Count
 
                 
                 self.triangles.append(trianglesForVolume)
@@ -358,6 +401,7 @@ class USDtoDAGMC:
                 print(f"I don't know what to do with a {str(primType)} yet...")
             
             print("\n\n")
+
 
     def save_to_h5m(self, filename: str = fname_root + '.h5m'):
         '''

@@ -1,7 +1,8 @@
 import os, tarfile, tempfile, pathlib # System packages
 import omni
 
-import docker
+import subprocess, sys # Alternative to os to run shell commands - dont know why it wasn't working before...
+
 
 ###################################
 ## Set Paths & Get Temp Folders
@@ -24,7 +25,7 @@ paths = {
         "share"             : f"{tmp}{sep}share",
         "usdTmp"            : f"{tmp}{sep}usd",
         "outTmpOpenMC"      : f"{tmp}{sep}outOpenMC",
-        "workflowDest"      : "/" # IN container
+        "workflowDest"      : "/" # In container
     }
 
 pathlib.Path(paths["share"]).mkdir(parents=True, exist_ok=True)
@@ -68,45 +69,16 @@ def toy_test():
     #Test Toy
     print("Running Toy Test Workflow")
 
-    new_sys = False # True to test docker system
-    if new_sys:
-        # Attach to toil docker container 
-        client = docker.from_env()
-        toilContainer = client.containers.get("omniflow-toil-1")
+    cmd = f"toil-cwl-runner --outdir {paths['output_test']} {paths['workflow']}{sep}tests{sep}toy{sep}openmc_tool_toy.cwl {paths['workflow']}{sep}tests{sep}toy{sep}script_loc_toy.yml"
+    print(cmd)
 
-        # Send CWL files to container
-        print('Sending Files')
-        send_files(
-            container = toilContainer,
-            source = paths["workflow"],
-            temp = f'{paths["share"]}{sep}cwlBundle.tar',
-            destination = paths["workflowDest"]
-        )
+    output = subprocess.run([i for i in cmd.split(' ')], capture_output=True, text=True)
 
-        # GET AND COPY USD FILE HERE
+    print(f'stdout:\n\n{output.stdout}\n\n')
+    print(f'stderr:\n\n{output.stderr}\n\n')
 
-        # Run toil
-        print('Running Workflow in Container') 
-        var = toilContainer.exec_run(
-            ["cwltool",
-            "--no-match-user",
-            "--outdir", f"{paths['output_container']}/toy",
-            "/tests/toy/openmc_tool_toy.cwl",
-            "/tests/toy/script_loc_toy.yml"]
-        )
-        print(var)
-        
-        # Copy files back to output folder
-        print('Retrieving Files')
-        get_files(
-            container = toilContainer,
-            source = paths['output_container'],
-            destination = paths['output_sim'],
-            fname = 'toy_output'
-        )
-    else:
-        print(f"cwltool --outdir {paths['output_test']} --no-match-user {paths['workflow']}{sep}tests{sep}toy{sep}openmc_tool_toy.cwl {paths['workflow']}{sep}tests{sep}toy{sep}script_loc_toy.yml")
-        os.system(f"cwltool --outdir {paths['output_test']} --no-match-user {paths['workflow']}{sep}tests{sep}toy{sep}openmc_tool_toy.cwl {paths['workflow']}{sep}tests{sep}toy{sep}script_loc_toy.yml")
+    # print(f"cwltool --outdir {paths['output_test']} {paths['workflow']}{sep}tests{sep}toy{sep}openmc_tool_toy.cwl {paths['workflow']}{sep}tests{sep}toy{sep}script_loc_toy.yml")
+    # os.system(f"cwltool --outdir {paths['output_test']} {paths['workflow']}{sep}tests{sep}toy{sep}openmc_tool_toy.cwl {paths['workflow']}{sep}tests{sep}toy{sep}script_loc_toy.yml")
 
     print(f"Toy Test Complete! Your files will be in: {paths['output_test']}")
 
@@ -114,9 +86,16 @@ def simple_CAD_test():
     #Test Simple CAD
     print("Running Simple CAD Test Workflow")
 
-    print(f"cwltool --outdir {paths['output_test']} --no-match-user {paths['workflow']}{sep}tests{sep}simple{sep}simple_CAD_workflow.cwl {paths['workflow']}{sep}tests{sep}simple{sep}script_loc_simple_CAD.yml")
-        
-    os.system(f"cwltool --outdir {paths['output_test']} --no-match-user {paths['workflow']}{sep}tests{sep}simple{sep}simple_CAD_workflow.cwl {paths['workflow']}{sep}tests{sep}simple{sep}script_loc_simple_CAD.yml")
+    cmd = f"toil-cwl-runner --outdir {paths['output_test']} {paths['workflow']}{sep}tests{sep}simple{sep}simple_CAD_workflow.cwl {paths['workflow']}{sep}tests{sep}simple{sep}script_loc_simple_CAD.yml"
+    print(cmd)
+
+    output = subprocess.run([i for i in cmd.split(' ')], capture_output=True, text=True)
+
+    print(f'stdout:\n\n{output.stdout}\n\n')
+    print(f'stderr:\n\n{output.stderr}\n\n')
+
+    # print(f"cwltool --outdir {paths['output_test']} {paths['workflow']}{sep}tests{sep}simple{sep}simple_CAD_workflow.cwl {paths['workflow']}{sep}tests{sep}simple{sep}script_loc_simple_CAD.yml")  
+    # os.system(f"cwltool --outdir {paths['output_test']} {paths['workflow']}{sep}tests{sep}simple{sep}simple_CAD_workflow.cwl {paths['workflow']}{sep}tests{sep}simple{sep}script_loc_simple_CAD.yml")
 
     print(f"Simple CAD Test Complete! Your files will be in: {paths['output_test']}")
     
@@ -128,34 +107,74 @@ def run_workflow():
     export_stage()
 
     print("Running Workflow")
-    print(f"cwltool --outdir {paths['output_sim']} --no-match-user {paths['workflow']}{sep}main{sep}openmc_workflow.cwl {paths['workflow']}{sep}main{sep}script_loc.yml")
-    os.system(f"cwltool --outdir {paths['output_sim']} --no-match-user {paths['workflow']}{sep}main{sep}openmc_workflow.cwl {paths['workflow']}{sep}main{sep}script_loc.yml")
+
+    cmd = f"toil-cwl-runner --outdir {paths['output_sim']} {paths['workflow']}{sep}main{sep}openmc_workflow.cwl {paths['workflow']}{sep}main{sep}script_loc.yml"
+    print(cmd)
+
+    output = subprocess.run([i for i in cmd.split(' ')], capture_output=True, text=True)
+
+    print(f'stdout:\n\n{output.stdout}\n\n')
+    print(f'stderr:\n\n{output.stderr}\n\n')
+
+    # print(f"cwltool --outdir {paths['output_sim']} {paths['workflow']}{sep}main{sep}openmc_workflow.cwl {paths['workflow']}{sep}main{sep}script_loc.yml")
+    # os.system(f"cwltool --outdir {paths['output_sim']} {paths['workflow']}{sep}main{sep}openmc_workflow.cwl {paths['workflow']}{sep}main{sep}script_loc.yml")
 
     print(f"Done! Your files will be in: {paths['output_sim']}")
 
 
 def get_materials():
-    # Gets material names from the dagmc.h5m file (if its in the paramak folder)
+    # Gets material names from the usd file outputted by the omniverse extension
     print("Getting Material Names")
 
     print('Exporting File')
     export_stage()
 
+    print(ext_path)
+
     print('Running materials getter')
-    print(f"cwltool --outdir {paths['output_omni']} --no-match-user {paths['workflow']}{sep}dagmc_material_name{sep}dagmc_materials.cwl {paths['workflow']}{sep}dagmc_material_name{sep}dagmc_materials.yml")
-    os.system(f"cwltool --outdir {paths['output_omni']} --no-match-user {paths['workflow']}{sep}dagmc_material_name{sep}dagmc_materials.cwl {paths['workflow']}{sep}dagmc_material_name{sep}dagmc_materials.yml")
+
+    cmd = f"toil-cwl-runner --outdir {paths['output_omni']} {paths['workflow']}{sep}dagmc_material_name{sep}dagmc_materials.cwl {paths['workflow']}{sep}dagmc_material_name{sep}dagmc_materials.yml"
+    print(cmd)
+
+    output = subprocess.run([i for i in cmd.split(' ')], capture_output=True, text=True)
+
+    print(f'stdout:\n\n{output.stdout}\n\n')
+    print(f'stderr:\n\n{output.stderr}\n\n')
+
+    # output = subprocess.run(["toil-cwl-runner", "--outdir", paths['output_omni'], f"{paths['workflow']}{sep}dagmc_material_name{sep}dagmc_materials.cwl", f"{paths['workflow']}{sep}dagmc_material_name{sep}dagmc_materials.yml"], capture_output=True, text=True)
+
+    # print(f'stdout:\n\n{output.stdout}\n\n')
+    # print(f'stderr:\n\n{output.stderr}\n\n')
+
+    # output = subprocess.run(["cwltool", "/home/williamjsmith15/PhD/OmniFlow/test.txt"], capture_output=True, text=True)
+
+    # print(f'stdout:\n\n{output.stdout}\n\n')
+    # print(f'stderr:\n\n{output.stderr}\n\n')
+
+    mat_file_path = f"{paths['output_omni']}{paths['sep']}materials.txt"
+    materials = []
+    if os.path.exists(mat_file_path):
+        with open(mat_file_path) as file:
+            for line in file:
+                materials.append(line)
 
     print("Materials Getter Finished")
 
-
-def settings_enter(num_source):
-    #To remember the number of sources field
-    with open(f"{paths['output_omni']}{sep}num_sources.txt", 'w') as file:
-        file.write(f"num_sources = {num_source}")
-
+    return materials
 
 def export_stage():
     print(f"Exporting stage to: {paths['output_omni']}/dagmc.usd")
     stage = omni.usd.get_context().get_stage()
     stage.Export(f"{paths['output_omni']}/dagmc.usd")
     print("Successfully exported USD stage!")
+
+
+def t_f(string):
+    # Quick helper function to convert string to bool
+    if string == 'True':
+        return True
+    elif string == 'False':
+        return False
+    else:
+        print('I dont know what this is, returning default of false')
+        return False

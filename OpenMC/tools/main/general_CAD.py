@@ -6,6 +6,8 @@
 import openmc
 import os
 import math
+import openmc_plasma_source as ops
+import numpy as np
 
 # Find the settings file
 sep = os.sep
@@ -28,9 +30,10 @@ for root, dirs, files in os.walk(cwl_folder):
             geometry_path = os.path.join(root, file)
 
 # Get all settings out
-materials = []
-sources = []
-settings = []
+materials_input = []
+sources_input = []
+settings_input = []
+ex_settings = []
 position = 0
 with open(settings_path) as f:
     for line in f:
@@ -41,14 +44,19 @@ with open(settings_path) as f:
             if "SOURCES" in line:
                 position = 2
             else:
-                materials.append(line.split())
+                materials_input.append(line.split())
         elif position == 2:
             if "SETTINGS" in line:
                 position = 3
             else:
-                sources.append(line.split())
+                sources_input.append(line.split())
         elif position == 3:
-            settings.append(line.split())
+            if "EXT_SETTINGS" in line:
+                position = 4
+            else:
+                settings_input.append(line.split())
+        elif position == 4:
+            ex_settings.append(line.split())
         
 
 ##################
@@ -56,14 +64,20 @@ with open(settings_path) as f:
 ##################
 
 tmp_material_array = []
-for material in materials:
+# Temp for testing
+# for material in materials_input:
+#     tmp_material = openmc.Material(name = material[0])
+#     tmp_material.add_element('Fe', 1, 'ao')
+#     tmp_material.set_density("g/cm3", 7.7)
+#     tmp_material_array.append(tmp_material)
+for material in materials_input:
     tmp_material = openmc.Material(name = material[0])
     tmp_material.add_element(material[1], 1, "ao")
     tmp_material.set_density("g/cm3", float(material[2]))
     tmp_material_array.append(tmp_material)
 
-materials_file = openmc.Materials(tmp_material_array)
-materials_file.export_to_xml()
+materials = openmc.Materials(tmp_material_array)
+materials.export_to_xml()
 
 ##################
 # DEFINE GEOMETRY
@@ -75,7 +89,12 @@ dagmc_univ = openmc.DAGMCUniverse(filename=geometry_path)
 # geometry.export_to_xml()
 
 # creates an edge of universe boundary surface
-vac_surf = openmc.Sphere(r=10000, surface_id=9999, boundary_type="vacuum")
+vac_surf = openmc.Sphere(r=10, surface_id=9999, boundary_type="vacuum") # Normally like 100000
+# lead_surf = -openmc.Sphere(r=60000) & + openmc.Sphere(r=50000)
+# lead = openmc.Material(name='lead')
+# lead.set_density('g/cc', 11.4)
+# lead.add_element('Pb', 1)
+# lead_cell = openmc.Cell(fill=lead, region=lead_surf)
 # adds reflective surface for the sector model at 0 degrees
 reflective_1 = openmc.Plane(
     a=math.sin(0),
@@ -106,33 +125,69 @@ geometry.export_to_xml()
 # DEFINE SETTINGS
 ##################
 
-settings_file = openmc.Settings()
+settings = openmc.Settings()
+
+source_type = ''
+
+for ex_setting in ex_settings:
+    if ex_setting[0] == "source_type":
+        source_type = " ".join(ex_setting[1:])
+    else:
+        print(f"Don't know what to do with {ex_setting}")
 
 # Sources
 sources = []
-for source in sources:
-    source_pnt = openmc.stats.Point(xyz=(float(source[1]), float(source[2]), float(source[3])))
-    source = openmc.Source(space=source_pnt, energy=openmc.stats.Discrete(x=[float(source[0]),], p=[1.0,]))
-    sources.append(source)
-source_str = 1.0 #/ len(sources)
-for source in sources:
-    source.strength = source_str
-settings_file.source = sources
+angle_conversion = (2*np.pi)/360
+if source_type == 'Point Source': # If a point source
+    for source in sources_input:
+        source_pnt = openmc.stats.Point(xyz=(float(source[1]), float(source[2]), float(source[3])))
+        source = openmc.Source(space=source_pnt, energy=openmc.stats.Discrete(x=[float(source[0]),], p=[1.0,]))
+        sources.append(source)
+    source_str = 1.0 / len(sources)
+    for source in sources:
+        source.strength = source_str
+elif source_type == 'Fusion Point Source':
+    for source in sources_input:
+        source_single = ops.FusionPointSource(
+
+        )
+        sources.append(source_single)
+elif source_type == 'Fusion Ring Source':
+    for source in sources_input:
+        source_single = ops.FusionRingSource(
+            angles =        (float(source[2])*angle_conversion, float(source[3])*angle_conversion),
+            radius =        float(source[0]),
+            temperature =   float(source[4]),
+            fuel =          str(source[1]),
+            z_placement =   float(source[5])
+        )
+        sources.append(source_single)
+elif source_type == 'Tokamak Source':
+    for source in sources_input:
+        source_single = ops.TokamakSource(
+
+        ).make_openmc_sources()
+        sources.append(source_single)
+else:
+    print(f'I dont know what to do with {source_type}')
+
+settings.source = sources
+
 
 # Settings
-for setting in settings:
+for setting in settings_input:
     try:
         if setting[0] == "batches":     # Apparently the version of python being used is not new enough for swtich statements... :(
-            settings_file.batches = int(setting[1])
+            settings.batches = int(setting[1])
         elif setting[0] == "particles":
-            settings_file.particles = int(setting[1])
+            settings.particles = int(setting[1])
         elif setting[0] == "run_mode":
-            settings_file.run_mode = str(" ".join(setting[1:]))
+            settings.run_mode = str(" ".join(setting[1:]))
         else:
             print(f"Setting: {setting} did not match one of the expected cases.")
     except:
         print(f"There was an error with setting {setting} somewhere...")
 
-settings_file.export_to_xml()
+settings.export_to_xml()
 
 openmc.run(tracks=True) # Run in tracking mode for visualisation of tracks through CAD

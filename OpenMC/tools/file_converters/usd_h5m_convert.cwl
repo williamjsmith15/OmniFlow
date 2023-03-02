@@ -14,6 +14,8 @@ inputs:
       position: 1
   usd_CAD:
     type: File
+  settings:
+    type: File
     
 outputs:
   dagmc_CAD:

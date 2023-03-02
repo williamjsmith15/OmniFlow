@@ -9,6 +9,8 @@ inputs:
         type: File
     usd_h5m_script:
         type: File
+    settings:
+        type: File
 
 
 steps:
@@ -17,6 +19,7 @@ steps:
         in:
             usd_h5m_script: usd_h5m_script
             usd_CAD: usd_CAD
+            settings: settings
         out:
             [dagmc_CAD]
 
