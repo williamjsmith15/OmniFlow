@@ -1,4 +1,9 @@
 OpenMC/output/omni/dagmc.usd
 OpenMC/output/simulation/dagmc.vtk
-OpenMC/output/simulation/tracks.vtvp
+OpenMC/output/simulation/tracks.pvtp
 OpenMC/output/simulation/tracks_0.vtp
+OpenMC/output/test/dagmc.vtk
+OpenMC/output/test/tracks.vtvp
+OpenMC/output/test/tracks_0.vtp
+OpenMC/output/test/output.txt
+OpenMC/output/test/tallies.out
