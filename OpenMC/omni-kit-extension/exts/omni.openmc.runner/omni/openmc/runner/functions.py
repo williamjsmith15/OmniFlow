@@ -100,7 +100,6 @@ def wsl_file_convert(win_path):
     step_in_path = win_path.split('\\')
     drive_letter = step_in_path[0].replace(':', '')
     wsl_file = f"/mnt/{drive_letter}"
-    print(step_in_path)
     for step in step_in_path[1:]:
         wsl_file = f"{wsl_file}/{step}"
 
