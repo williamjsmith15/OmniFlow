@@ -82,6 +82,30 @@ def export_stage():
     stage.Export(path)
     print("Successfully exported USD stage!")
 
+def wsl_file_convert(win_path):
+    """
+    Converts a windows file path, ie C:\PhD\OmniFlow....
+    to a wsl mount file path, ie /mnt/c/PhD/OmniFlow....
+
+    Parameters
+    ----------
+    win_path: string
+        file path in normal windows format
+    
+    Returns
+    -------
+    wsl_file: string
+        file path in wsl format
+    """
+    step_in_path = win_path.split('\\')
+    drive_letter = step_in_path[0].replace(':', '')
+    wsl_file = f"/mnt/{drive_letter}"
+    print(step_in_path)
+    for step in step_in_path[1:]:
+        wsl_file = f"{wsl_file}/{step}"
+
+    return wsl_file
+
 
 ###################################
 ## Workflows
@@ -95,7 +119,20 @@ def toy_test():
 
     print("Running Toy Test Workflow")
 
-    cmd = f"{prefix_cmd} --outdir {paths['output_test']} {paths['workflow']}{sep}tests{sep}toy{sep}openmc_tool_toy.cwl {paths['workflow']}{sep}tests{sep}toy{sep}script_loc_toy.yml"
+    # Handling of different operating systems 
+    if platform == 'linux':
+        out_dir = paths['output_test']
+        cwl_loc = f"{paths['workflow']}{sep}tests{sep}toy{sep}openmc_tool_toy.cwl"
+        yml_loc = f"{paths['workflow']}{sep}tests{sep}toy{sep}script_loc_toy.yml"
+    elif platform == 'win32':
+        out_dir = wsl_file_convert(paths['output_test'])
+        cwl_loc = wsl_file_convert(f"{paths['workflow']}{sep}tests{sep}toy{sep}openmc_tool_toy.cwl")
+        yml_loc = wsl_file_convert(f"{paths['workflow']}{sep}tests{sep}toy{sep}script_loc_toy.yml")
+    else:
+        print(f"Don't know how to handle platform: {platform} yet")
+
+    # Run the workflow 
+    cmd = f"{prefix_cmd} --outdir {out_dir} {cwl_loc} {yml_loc}"
     print(cmd)
 
     output = subprocess.run([i for i in cmd.split(' ')], capture_output=True, text=True)
@@ -113,7 +150,20 @@ def simple_CAD_test():
 
     print("Running Simple CAD Test Workflow")
 
-    cmd = f"{prefix_cmd} --outdir {paths['output_test']} {paths['workflow']}{sep}tests{sep}simple{sep}simple_CAD_workflow.cwl {paths['workflow']}{sep}tests{sep}simple{sep}script_loc_simple_CAD.yml"
+    # Handling of different operating systems 
+    if platform == 'linux':
+        out_dir = paths['output_test']
+        cwl_loc = f"{paths['workflow']}{sep}tests{sep}simple{sep}simple_CAD_workflow.cwl"
+        yml_loc = f"{paths['workflow']}{sep}tests{sep}simple{sep}script_loc_simple_CAD.yml"
+    elif platform == 'win32':
+        out_dir = wsl_file_convert(paths['output_test'])
+        cwl_loc = wsl_file_convert(f"{paths['workflow']}{sep}tests{sep}simple{sep}simple_CAD_workflow.cwl")
+        yml_loc = wsl_file_convert(f"{paths['workflow']}{sep}tests{sep}simple{sep}script_loc_simple_CAD.yml")
+    else:
+        print(f"Don't know how to handle platform: {platform} yet")
+
+    # Run the workflow
+    cmd = f"{prefix_cmd} --outdir {out_dir} {cwl_loc} {yml_loc}"
     print(cmd)
 
     output = subprocess.run([i for i in cmd.split(' ')], capture_output=True, text=True)
@@ -137,7 +187,20 @@ def run_workflow():
 
     print("Running Workflow")
 
-    cmd = f"{prefix_cmd} --outdir {paths['output_sim']} {paths['workflow']}{sep}main{sep}openmc_workflow.cwl {paths['workflow']}{sep}main{sep}script_loc.yml"
+    # Handling of different operating systems 
+    if platform == 'linux':
+        out_dir = paths['output_sim']
+        cwl_loc = f"{paths['workflow']}{sep}main{sep}openmc_workflow.cwl"
+        yml_loc = f"{paths['workflow']}{sep}main{sep}script_loc.yml"
+    elif platform == 'win32':
+        out_dir = wsl_file_convert(paths['output_sim'])
+        cwl_loc = wsl_file_convert(f"{paths['workflow']}{sep}main{sep}openmc_workflow.cwl")
+        yml_loc = wsl_file_convert(f"{paths['workflow']}{sep}main{sep}script_loc.yml")
+    else:
+        print(f"Don't know how to handle platform: {platform} yet")
+
+    # Run the workflow
+    cmd = f"{prefix_cmd} --outdir {out_dir} {cwl_loc} {yml_loc}"
     print(cmd)
 
     output = subprocess.run([i for i in cmd.split(' ')], capture_output=True, text=True)
@@ -166,7 +229,20 @@ def get_materials():
 
     print('Running materials getter')
 
-    cmd = f"{prefix_cmd} --outdir {paths['output_omni']} {paths['workflow']}{sep}dagmc_material_name{sep}dagmc_materials.cwl {paths['workflow']}{sep}dagmc_material_name{sep}dagmc_materials.yml"
+    # Handling of different operating systems 
+    if platform == 'linux':
+        out_dir = paths['output_omni']
+        cwl_loc = f"{paths['workflow']}{sep}dagmc_material_name{sep}dagmc_materials.cwl"
+        yml_loc = f"{paths['workflow']}{sep}dagmc_material_name{sep}dagmc_materials.yml"
+    elif platform == 'win32':
+        out_dir = wsl_file_convert(paths['output_omni'])
+        cwl_loc = wsl_file_convert(f"{paths['workflow']}{sep}dagmc_material_name{sep}dagmc_materials.cwl")
+        yml_loc = wsl_file_convert(f"{paths['workflow']}{sep}dagmc_material_name{sep}dagmc_materials.yml")
+    else:
+        print(f"Don't know how to handle platform: {platform} yet")
+
+    # Run the workflow 
+    cmd = f"{prefix_cmd} --outdir {out_dir} {cwl_loc} {yml_loc}"
     print(cmd)
 
     output = subprocess.run([i for i in cmd.split(' ')], capture_output=True, text=True)

@@ -67,7 +67,7 @@ container = ' '
 # container = ' --no-container '
 
 # os.system(f"wsl.exe {runner}{container}--debug --outdir /mnt/d/PhD/OmniFlow/OpenMC/output/tests /mnt/d/PhD/OmniFlow/OpenMC/tools/tests/toy/openmc_tool_toy.cwl /mnt/d/PhD/OmniFlow/OpenMC/tools/tests/toy/script_loc_toy.yml")
-os.system(f"wsl.exe {runner}{container}--debug --outdir /mnt/d/PhD/OmniFlow/OpenMC/output/tests /mnt/d/PhD/OmniFlow/OpenMC/tools/tests/simple/simple_CAD_workflow.cwl /mnt/d/PhD/OmniFlow/OpenMC/tools/tests/simple/script_loc_simple_CAD.yml")
+os.system(f"wsl.exe {runner}{container}--debug --outdir /mnt/d/phd/omniflow/openmc/output/tests /mnt/d/PhD/OmniFlow/OpenMC/tools/tests/simple/simple_CAD_workflow.cwl /mnt/d/PhD/OmniFlow/OpenMC/tools/tests/simple/script_loc_simple_CAD.yml")
 
 
 
