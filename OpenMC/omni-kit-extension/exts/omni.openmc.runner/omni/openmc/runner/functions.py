@@ -20,7 +20,6 @@ paths = {
         "output_sim"        : f"{parent_folder}{sep}output{sep}simulation",
         "output_test"       : f"{parent_folder}{sep}output{sep}test",
         "general_CAD"       : f"{sep}paramak{sep}dagmc.h5m",
-        "sep"               : sep,
         "tmp"               : tmp,
         "share"             : f"{tmp}{sep}share",
         "usdTmp"            : f"{tmp}{sep}usd",
@@ -175,7 +174,7 @@ def get_materials():
     print(f'stdout:\n\n{output.stdout}\n\n')
     print(f'stderr:\n\n{output.stderr}\n\n')
 
-    mat_file_path = f"{paths['output_omni']}{paths['sep']}materials.txt"
+    mat_file_path = f"{paths['output_omni']}{sep}materials.txt"
     materials = []
     if os.path.exists(mat_file_path):
         with open(mat_file_path) as file:
