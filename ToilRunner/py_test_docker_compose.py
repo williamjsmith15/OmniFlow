@@ -61,7 +61,13 @@ def get_files(container, source, destination, fname):
 
 print(f"{paths['workflow']}{sep}tests{sep}toy{sep}openmc_tool_toy.cwl")
 
-os.system(f"wsl.exe toil-cwl-runner --debug --outdir /mnt/d/PhD/OmniFlow/OpenMC/output/tests /mnt/d/PhD/OmniFlow/OpenMC/tools/tests/toy/openmc_tool_toy.cwl /mnt/d/PhD/OmniFlow/OpenMC/tools/tests/toy/script_loc_toy.yml")
+runner = 'cwltool'            # Testing
+# runner = 'toil-cwl-runner'    # Testing
+container = ' '
+# container = ' --no-container '
+
+# os.system(f"wsl.exe {runner}{container}--debug --outdir /mnt/d/PhD/OmniFlow/OpenMC/output/tests /mnt/d/PhD/OmniFlow/OpenMC/tools/tests/toy/openmc_tool_toy.cwl /mnt/d/PhD/OmniFlow/OpenMC/tools/tests/toy/script_loc_toy.yml")
+os.system(f"wsl.exe {runner}{container}--debug --outdir /mnt/d/PhD/OmniFlow/OpenMC/output/tests /mnt/d/PhD/OmniFlow/OpenMC/tools/tests/simple/simple_CAD_workflow.cwl /mnt/d/PhD/OmniFlow/OpenMC/tools/tests/simple/script_loc_simple_CAD.yml")
 
 
 
@@ -74,3 +80,10 @@ os.system(f"wsl.exe toil-cwl-runner --debug --outdir /mnt/d/PhD/OmniFlow/OpenMC/
 # for msg in str(var[1]).split("\\n"):
 #     for i in msg.split("\\x1b"):
 #         print(i)
+
+
+
+
+# To look at:
+
+# https://cwl.discourse.group/t/working-offline-with-singularity/246
