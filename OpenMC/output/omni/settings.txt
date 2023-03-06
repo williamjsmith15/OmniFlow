@@ -7,7 +7,7 @@ batches 5
 particles 50
 run_mode fixed source
 EXT_SETTINGS
-source_type Point Source
+source_type Fusion Ring Source
 num_sources 1
 up_axis Y
 test_dropdown True

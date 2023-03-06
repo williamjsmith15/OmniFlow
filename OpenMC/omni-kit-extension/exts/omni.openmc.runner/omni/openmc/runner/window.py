@@ -84,7 +84,7 @@ class Window(ui.Window):
     def _build_materials(self):
         # Takes the material.txt file and reads all the material names into teh materails list
 
-        mat_file_path = f"{paths['output_omni']}{paths['sep']}materials.txt"
+        mat_file_path = f"{paths['output_omni']}{sep}materials.txt"
         materials = []
         if os.path.exists(mat_file_path):
             with open(mat_file_path) as file:
@@ -381,7 +381,7 @@ class Window(ui.Window):
         if get_mats:
             materials = get_materials()
 
-        with open(f"{paths['output_omni']}{paths['sep']}settings.txt", 'w') as file:
+        with open(f"{paths['output_omni']}{sep}settings.txt", 'w') as file:
             # Materials
             file.write('MATERIALS\n')
             # count = 0     # DEBUGGING
@@ -439,7 +439,7 @@ class Window(ui.Window):
         position = 0
         self.previous_settings = {}
 
-        with open(f"{paths['output_omni']}{paths['sep']}settings.txt", 'r') as file:
+        with open(f"{paths['output_omni']}{sep}settings.txt", 'r') as file:
             for line in file:
                 split_line = line.split()
                 if position == 0:
