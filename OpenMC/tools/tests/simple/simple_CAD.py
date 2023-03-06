@@ -1,7 +1,6 @@
 #From https://nbviewer.org/github/openmc-dev/openmc-notebooks/blob/main/cad-based-geometry.ipynb
 
 import urllib.request
-from IPython.display import Image
 import openmc
 from matplotlib import pyplot as plt
 
