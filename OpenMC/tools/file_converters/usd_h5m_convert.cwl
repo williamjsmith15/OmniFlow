@@ -3,7 +3,7 @@
 
 cwlVersion: v1.0
 class: CommandLineTool
-baseCommand: python
+baseCommand: python3
 hints:
   DockerRequirement:
     dockerPull: williamjsmith15/omniflow-openmc:latest
